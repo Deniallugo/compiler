@@ -8,20 +8,6 @@
 
 #include "scanner.h"
 
-enum _cases{
-    BEGIN,
-    NUMBER,
-    OPERATION,
-    SEPARATION,
-    WHITESPACE,
-    CHARs,
-    STRINGT,
-    SYMBOL,
-    OK,
-    END
-    
-};
-
 
 bool isNumber(char s){
     
@@ -33,18 +19,25 @@ bool isSymbol( char s){
     return ( (s >= 'a' && s <= 'z')||
              (s >= 'A' && s <= 'Z'));
 }
+/*
+static bool isOperation(char s){
+    return  s == '<' ||
+            s == '>' ||
+            s == '=' ||
+            s == '+' ||
+            s == '-' ||
+            s == '*' ||
+            s == '/' ||
+            s == '&' ||
+            s == '%' ||
+            s == '|' ||
+            s == '^' ||
+            s == '?' ||
+            s == '!';
+}*/
 
-bool isOperation( char s){
-    
-    return ( s == '*' ||
-             s == '+' ||
-             s == '-' ||
-             s == '/'
-            );
-}
+static bool isSeparation (char s){
 
-bool isSeparation (char s){
-    
     return ( s == '{' ||
              s == '}' ||
              s == '(' ||
@@ -57,20 +50,17 @@ bool isSeparation (char s){
             );
 }
 
-bool isSpace (char s){
+static bool isSpace (char s){
     if ( s == '\t'){
         line++;
+        return true ;
     }
     
     return ( s ==' '   ||
-             s == '\t' ||
              s == '\n'
             );
 }
 
-bool isKeyWord( string s){
-    return 0;
-}
 
 bool isInteger( string s){
     return 0;
@@ -81,7 +71,9 @@ bool isFloat(){
     
 }
 
+
 void createKeyWords(){
+
     insert( keyWords,"for","begin cycle");
     insert( keyWords,"bool", " type of numbers 0 and 1");
     insert( keyWords,"break", " stop coplete comand");
@@ -123,7 +115,7 @@ Token:: Token(TYPES _type, string _Value, string _Text, int _num, int _line){
     line = _line;
 };
 
-Scanner::Scanner(string s){
+Scanner:: Scanner(string s){
     
     f.open(s);
     
@@ -132,7 +124,7 @@ Scanner::Scanner(string s){
 bool Scanner::Next(){
     if(last_token)
         return end_of_file = true;
-    _cases cas = BEGIN;
+    States cas = BEGIN;
     char ch;
     bool point = false;
     string s = "";
@@ -220,22 +212,19 @@ bool Scanner::Next(){
                 s += ch;
                 
             }
-            f >> buf;// обратить внимание
-            if (isNumber(buf)){
-                while (isNumber(ch)) {
+            if ( keyWords.count(s) ){
+                col++;
+                t = new Token(_KEYWORD, s, keyWords[s], col, line);
+                break;
+            }
+            f>>ch;
+            while (isNumber(ch) || isSymbol(ch)) {
                     
                     f >> ch;
                     s += ch;
                 }
                 
-                t = new Token(_IDENTIFIER, s, "", col, line);
-            }
-            else
-            if ( keyWords.count(s) ){
-                col++;
-                t = new Token(_KEYWORD, s, keyWords[s], col, line);
-            }
-                       //добавить в лист с кодом identifier
+            t = new Token(_IDENTIFIER, s, "", col, line);
             break;
             
         case SEPARATION:
@@ -245,10 +234,33 @@ bool Scanner::Next(){
                     f >> ch;
                     s += ch;
                 }
+                col++;
                 t = new Token(_COMMENT, s, "not usable text", col, line);
             }
+            col ++;
+
             t = new Token(_SEPARATION, s, Separations[s], col ,line);
             break;
+        case STRINGT:
+            f >> ch;
+            s += ch;
+            while (ch != '\"'){
+                f >> ch;
+                s += ch;
+
+            }
+            col ++;
+             t = new Token(_STRING, s, "", col ,line);
+        case CHARs:
+            f >> ch;
+            s += ch;
+            while (ch != '\''){
+                f >> ch;
+                s += ch;
+
+            }
+            col ++;
+            t = new Token(_CHAR, s, "", col ,line);
         default:
             break;
     }
@@ -257,4 +269,3 @@ bool Scanner::Next(){
     }
         return end_of_file = false;
 }
-    

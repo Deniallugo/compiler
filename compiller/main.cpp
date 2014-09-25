@@ -6,11 +6,7 @@
 //  Copyright (c) 2014 Данил. All rights reserved.
 //
 
-#include <iostream>
-#include "scanner.h"
-int main(int argc, const char * argv[]) {
-    // insert code here...
+int main() {
 
-    std::cout << "Hello, World!\n";
-    return 0;
+
 }

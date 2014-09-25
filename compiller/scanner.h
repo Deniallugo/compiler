@@ -5,22 +5,38 @@
 //  Created by Данил on 17.09.14.
 //  Copyright (c) 2014 Данил. All rights reserved.
 //
+#ifndef MYFILE_H
+#define MYFILE_H
 
-#ifndef __compiller__scanner__
-#define __compiller__scanner__
 #include <map>
 #include <iostream>
 #include <fstream>
-
 #include <string>
-using namespace std;
 
+using namespace std;
+////????????????
 map< string, string> keyWords;
 map< string, string> Operations;
 map< string, string> Separations;
+///?????????????????вот здесь КОСЯЯЯКККК!!!!!
+
 int col = 0;
 int line = 0;
 
+
+enum States{
+    BEGIN,
+    NUMBER,
+    OPERATION,
+    SEPARATION,
+    WHITESPACE,
+    CHARs,
+    STRINGT,
+    SYMBOL,
+    OK,
+    END
+
+};
 
 
 enum TYPES {
@@ -51,16 +67,23 @@ public:
     string Value;
     string Text;
     int num, line;
-    void Print();
     Token(TYPES _type, string _Value, string _Text, int _num, int _line);
+    void Print() const;
+    void Print(ofstream*) const;
+    virtual bool operator == (string v) {return v == Value;}
+    virtual bool operator != (string v) {return v != Value;}
+    bool operator == (TYPES t) {return t == Type;}
+    bool operator != (TYPES t) {return t != Type;}
+
 };
+
 
 class Scanner {
 private:
     
     ifstream f;
     int line;
-    int col;
+    int col; // исправить колумн на колонку переделать 
     Token* t;
     char buf;
     bool end_of_file, last_token;
@@ -73,6 +96,14 @@ public:
     ~Scanner(void);
 };
 
-//TODO : СОЗДАТЬ КЛАССЫ С И СОЗДАТЬ ENUM 
+class MyException: public exception{
 
-#endif /* defined(__compiller__scanner__) */
+};
+/*
+static bool isOperation(char s);
+static bool isSeparation(char s);
+static bool isSpace(char s);
+static bool isNumber(char s);
+static bool isSymbol(char s);*/
+
+#endif
