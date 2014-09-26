@@ -102,32 +102,33 @@ void createKeyWords(){
     insert( keyWords,"return", " return variable");
     insert( keyWords,"void", "void");
     insert( keyWords,"while", "while");
+
 }
 
 void createOperations(){
-    insert(Separations, "+", "plus");
-    insert(Separations, "-", "minus");
-    insert(Separations, "*", "mul");
-    insert(Separations, "/", "div");
-    insert(Separations, "++", "incr");
-    insert(Separations, "--", "decr");
-    insert(Separations, "<", "less");
-    insert(Separations, ">", "more");
-    insert(Separations, "==", "equal");
-    insert(Separations, "<=", "less or equal");
-    insert(Separations, ">=", "more or equal");
-    insert(Separations, "+=", "plus and assign");
-    insert(Separations, "-=", "minus and assign");
-    insert(Separations, "&&", "logical and");
-    insert(Separations, "||", "logical or");
-    insert(Separations, "&", "byte and");
-    insert(Separations, "|", "byte or");
-    insert(Separations, "*=", "mul and assign");
-    insert(Separations, "/=", "div and assign");
-    insert(Separations, "!", "logical not");
-    insert(Separations, "~", "byte not");
-    insert(Separations, "!=", "non equal");
-    insert(Separations, "->", "arrow");
+    insert(Operations, "+", "plus");
+    insert(Operations, "-", "minus");
+    insert(Operations, "*", "mul");
+    insert(Operations, "/", "div");
+    insert(Operations, "++", "incr");
+    insert(Operations, "--", "decr");
+    insert(Operations, "<", "less");
+    insert(Operations, ">", "more");
+    insert(Operations, "==", "equal");
+    insert(Operations, "<=", "less or equal");
+    insert(Operations, ">=", "more or equal");
+    insert(Operations, "+=", "plus and assign");
+    insert(Operations, "-=", "minus and assign");
+    insert(Operations, "&&", "logical and");
+    insert(Operations, "||", "logical or");
+    insert(Operations, "&", "byte and");
+    insert(Operations, "|", "byte or");
+    insert(Operations, "*=", "mul and assign");
+    insert(Operations, "/=", "div and assign");
+    insert(Operations, "!", "logical not");
+    insert(Operations, "~", "byte not");
+    insert(Operations, "!=", "non equal");
+    insert(Operations, "->", "arrow");
 
 
 }
@@ -192,6 +193,15 @@ bool Scanner::Next(){
                 s+= ch;
                 break;
             }
+            else if (isOperation(ch)){
+                f >> buf ;
+                s += ch;
+                if (isOperation(buf))
+                    s += ch;
+                col++;
+                t = new Token(_OPERATION, s, Operations[s], col , line);
+            }
+
             else if (isSpace(ch)){
                 success = true;
                 break;
