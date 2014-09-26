@@ -5,20 +5,17 @@
 //  Created by Данил on 17.09.14.
 //  Copyright (c) 2014 Данил. All rights reserved.
 //
-#ifndef MYFILE_H
-#define MYFILE_H
-
+#pragma once
 #include <map>
 #include <iostream>
 #include <fstream>
 #include <string>
 
+
 using namespace std;
-////????????????
 map< string, string> keyWords;
 map< string, string> Operations;
 map< string, string> Separations;
-///?????????????????вот здесь КОСЯЯЯКККК!!!!!
 
 int col = 0;
 int line = 0;
@@ -99,11 +96,10 @@ public:
 class MyException: public exception{
 
 };
+
 /*
 static bool isOperation(char s);
 static bool isSeparation(char s);
 static bool isSpace(char s);
 static bool isNumber(char s);
 static bool isSymbol(char s);*/
-
-#endif

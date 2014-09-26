@@ -19,7 +19,7 @@ bool isSymbol( char s){
     return ( (s >= 'a' && s <= 'z')||
              (s >= 'A' && s <= 'Z'));
 }
-/*
+
 static bool isOperation(char s){
     return  s == '<' ||
             s == '>' ||
@@ -34,7 +34,7 @@ static bool isOperation(char s){
             s == '^' ||
             s == '?' ||
             s == '!';
-}*/
+}
 
 static bool isSeparation (char s){
 
@@ -104,6 +104,33 @@ void createKeyWords(){
     insert( keyWords,"while", "while");
 }
 
+void createOperations(){
+    insert(Separations, "+", "plus");
+    insert(Separations, "-", "minus");
+    insert(Separations, "*", "mul");
+    insert(Separations, "/", "div");
+    insert(Separations, "++", "incr");
+    insert(Separations, "--", "decr");
+    insert(Separations, "<", "less");
+    insert(Separations, ">", "more");
+    insert(Separations, "==", "equal");
+    insert(Separations, "<=", "less or equal");
+    insert(Separations, ">=", "more or equal");
+    insert(Separations, "+=", "plus and assign");
+    insert(Separations, "-=", "minus and assign");
+    insert(Separations, "&&", "logical and");
+    insert(Separations, "||", "logical or");
+    insert(Separations, "&", "byte and");
+    insert(Separations, "|", "byte or");
+    insert(Separations, "*=", "mul and assign");
+    insert(Separations, "/=", "div and assign");
+    insert(Separations, "!", "logical not");
+    insert(Separations, "~", "byte not");
+    insert(Separations, "!=", "non equal");
+    insert(Separations, "->", "arrow");
+
+
+}
 
 
 
@@ -175,14 +202,31 @@ bool Scanner::Next(){
                     f >> ch;
                     s +=ch;
                 }
-                if (ch == '.'){
+                if (ch == '.' && !point){
                     point = true;
                     break;
                 }
+                else
+                    new exception();
                 f>>ch;
-                if ( isSpace(ch)){
+                if ( ch == 'e'){
+                    f >>buf;
+                    if( isNumber(buf)){
+                        s += ch;
+                        s += buf;
+                        while (isNumber(ch)) {
+                            s += ch;
+
+                        }
+                    }
+                    else
+                        new exception();
+
+                }
+
+                if ( isSpace(ch) || isSeparation(ch)){
                     col++;
-                    t = new Token(_FLOAT, s, "",col, line );
+                    t = new Token(_INTEGER, s, "",col, line );
                     break;
                 }
                 
@@ -206,7 +250,8 @@ bool Scanner::Next(){
                 
                 break;
             }
-            case SYMBOL:
+
+        case SYMBOL:
             while( isSymbol(ch)){
                 f >> ch;
                 s += ch;
