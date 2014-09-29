@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Данил. All rights reserved.
 //
 #pragma once
+
 #include <map>
 #include <iostream>
 #include <fstream>
@@ -31,7 +32,8 @@ enum States{
     STRINGT,
     SYMBOL,
     OK,
-    END
+    END,
+    COMMENT
 
 };
 
@@ -59,12 +61,12 @@ void createKeyWords();
 
 class Token{
 public:
-    
+    string sType;
     TYPES Type;
     string Value;
     string Text;
     int num, line;
-    Token(TYPES _type, string _Value, string _Text, int _num, int _line);
+    Token(string _sType, TYPES _type, string _Value, string _Text, int _num, int _line);
     void Print() const;
     void Print(ofstream*) const;
     virtual bool operator == (string v) {return v == Value;}
@@ -82,9 +84,8 @@ private:
     int line;
     int col; // исправить колумн на колонку переделать 
     Token* t;
-    char buf;
+    char buf = 1;
     bool end_of_file, last_token;
-    
 public:
     bool isEnd();
     Token* Get();
@@ -93,9 +94,19 @@ public:
     ~Scanner(void);
 };
 
-class MyException: public exception{
 
+class MyException{
+private:
+    int line, col;
+    string massage;
+
+public:
+    MyException(const string &m, int l = -1, int c = -1) : line(l), col(c), massage(m) {}
+    MyException(const string &m, Token *token) : line(token->line), col(token->num), massage(m) {}
+    void Print() const;
+    void Print(ofstream *f) const;
 };
+
 
 /*
 static bool isOperation(char s);
