@@ -14,76 +14,77 @@ static string get_out_addr(const string& in){
 }
 
 bool isNumber(char c){
-    
+
     return (c >= '0' && c <= '9');
 }
 
-bool isSymbol( char c){
-    
-    return ((c >= 'a' && c <= 'z')||
-            (c >= 'A' && c <= 'Z')
-             );
+bool isSymbol(char c){
+
+    return ((c >= 'a' && c <= 'z') ||
+            (c >= 'A' && c <= 'Z') ||
+            c == '_'
+            );
 }
 
 static bool isOperation(char c){
     return  c == '<' ||
-            c == '>' ||
-            c == '=' ||
-            c == '+' ||
-            c == '-' ||
-            c == '*' ||
-            c == '/' ||
-            c == '&' ||
-            c == '%' ||
-            c == '|' ||
-            c == '^' ||
-            c == '?' ||
-            c == '!';
+    c == '>' ||
+    c == '=' ||
+    c == '+' ||
+    c == '-' ||
+    c == '*' ||
+    c == '/' ||
+    c == '&' ||
+    c == '%' ||
+    c == '|' ||
+    c == '^' ||
+    c == '?' ||
+    c == '!';
 }
 
-static bool isSeparation (char c){
+static bool isSeparation(char c){
 
-    return ( c == '{' ||
-             c == '}' ||
-             c == '(' ||
-             c == ')' ||
-             c == '/' ||
-             c == '[' ||
-             c == ']' ||
-             c == '.' ||
-             c == ',' ||
-             c == ';'
+    return (c == '{' ||
+            c == '}' ||
+            c == '(' ||
+            c == ')' ||
+            c == '/' ||
+            c == '[' ||
+            c == ']' ||
+            c == '.' ||
+            c == ',' ||
+            c == ';'
             );
 }
 
-static bool isSpace (char c){
-    if ( c == '\t'){
+static bool isSpace(char c){
+    if (c == '\t'){
         line++;
         col = 0;
-        return true ;
-    }
-    else
-    if( c ==' ' || c == '\n'  ){
-        col++;
         return true;
     }
+    else
+        if (c == ' ' || c == '\n'){
+            col++;
+            return true;
+        }
     return false;
 }
 
 
-bool isInteger( string s){
+bool isInteger(string s){
     return 0;
 }
 
 bool isFloat(){
     return 0;
-    
+
 }
 Scanner::~Scanner(void){
     delete t;
 }
 
-bool Scanner :: isEnd(){
+bool Scanner::isEnd(){
     return end_of_file;
 }
 
@@ -151,7 +152,7 @@ void createOperations(){
 
 
 
-Token:: Token(string _sType, TYPES _type, string _Value, string _Text, int _num, int _line){
+Token::Token(string _sType, TYPES _type, string _Value, string _Text, int _num, int _line){
     sType = _sType;
     Type = _type;
     Value = _Value;
@@ -160,50 +161,54 @@ Token:: Token(string _sType, TYPES _type, string _Value, string _Text, int _num,
     line = _line;
 };
 
-void Token :: Print() const{
-    cout << sType << string(13 - sType.length(), ' ') <<Value << line << "\t" << num << "\t" << Text << string(Text.length(), ' ')  << endl ;
+void Token::Print() const{
+    cout << sType << string(13 - sType.length(), ' ') << Value << line << "\t" << num << "\t" << Text << string(Text.length(), ' ') << endl;
 }
 
-void Token :: Print(ofstream *t) const{
-    *t  << sType << "\t" <<Value << "\t" <<line << "\t" << num << "\t" << Text << string(Text.length(), ' ')  << endl ;
+void Token::Print(ofstream *t) const{
+    *t << sType << "\t" << Value << "\t" << line << "\t" << num << "\t" << Text << string(Text.length(), ' ') << endl;
 }
 
-void MyException :: Print(ofstream *f) const{
-    if(line != -1)
+void MyException::Print(ofstream *f) const{
+    if (line != -1)
         *f << massage << "\t line " << line << ", column " << col << endl;
     else
         *f << massage << endl;
 }
 
-void MyException :: Print() const{
-    if(line != -1)
+void MyException::Print() const{
+    if (line != -1)
         cout << massage << "\t line " << line << ", column " << col << endl;
     else
         cout << massage << endl;
 }
 
-Token* Scanner :: Get(){
+Token* Scanner::Get(){
     return t;
 }
 
-Scanner:: Scanner(string s){
-    
+Scanner::Scanner(string s){
+
     f.open(s);
-    
+
 }
 
 bool Scanner::Next(){
-    if(last_token)
+    if (last_token)
         return end_of_file = true;
     States cas = BEGIN;
     char ch;
     bool point = false;
-    if(f.eof() && (buf == 1)){
+    if (f.eof() && (buf == 1)){
+
         cas = END;
+
         end_of_file = true;
+
         throw MyException("File is empty");;
+
     }
-    if ( buf == 1){
+    if (buf == 1){
         f.get(buf);
         col++;
     }
@@ -211,272 +216,359 @@ bool Scanner::Next(){
     string s = "";
 
     ch = buf;
-    bool success  = false;
-    while(!success)
-    switch (cas) {
-        case BEGIN:
-            if(isNumber(ch)){
-                cas = NUMBER;
-               // s+=ch;
-                break;
-            }
-            else if(isSymbol(ch)){
-                cas = SYMBOL;
-               // s+=ch;
-                break;
-            }
-            
-            else if(ch == '\"'){
-                cas = STRINGT;
-                break;
-            } else if(ch == '\''){
-                cas = CHARs;
-                break;
-            }
-            else if (isSeparation(ch)) {
-                if( ch == '.'){
-                    f.get(buf);
-                    col++;
-                    if (isNumber(buf)){
-                        point = true;
-                        cas = NUMBER;
+    bool success = false;
+    while (!success)
+        switch (cas) {
+            case BEGIN:
+                if (isNumber(ch)){
+                    cas = NUMBER;
+                    break;
+                }
+                else if (isSymbol(ch)){
+                    cas = SYMBOL;
+                    break;
+                }
+
+                else if (ch == '\"'){
+                    cas = STRINGT;
+                    break;
+                }
+                else if (ch == '\''){
+                    cas = CHARs;
+                    break;
+                }
+                else if (isSeparation(ch)) {
+                    if (ch == '.'){
+                        f.get(buf);
+                        col++;
+                        if (isNumber(buf)){
+                            point = true;
+                            cas = NUMBER;
+                        }
+                        break;
                     }
+                    cas = SEPARATION;
                     break;
                 }
-                cas = SEPARATION;
-              //  s+= ch;
-                break;
-            }
-            else if (isOperation(ch)){
-                f.get(buf) ;
-                s += ch;
-                if (isOperation(buf))
-                    s += ch;
-                col++;
-                t = new Token("Operation",_OPERATION, s, Operations[s], col , line);
-                success = true;
-                buf = 1;
-                break;
-            }
+                else if (isOperation(ch)){
+                    f.get(buf);
 
-            else if (isSpace(ch)){
-                success = true;
-                buf = 1;
-                break;
-            }
-        case NUMBER:
-            if(!point){
-                while( isNumber(ch) && !f.eof()){
-                    col++;
                     s += ch;
-                    f.get(ch);
+                    if (!f.eof()){
+                        if (isOperation(buf)){
+                            s += buf;
+                            f.get(ch);
+                        }
+                        col++;
+                    }
+                    t = new Token("Operation", _OPERATION, s, Operations[s], col, line);
+                    f.eof() ? cas = END : success = true;
+                    buf = 1;
+                    break;
+
                 }
-                if (ch == '.' && !point && !f.eof()){
-                    s += ch;
-                    point = true;
+
+                else if (isSpace(ch)){
+                    success = true;
+                    buf = 1;
                     break;
                 }
-
-                if(f.eof()){
-                    if(point)
-                        t = new Token("float",_FLOAT, s, "",col, line );
-                    else
-                       t = new Token("integer",_INTEGER, s, "",col, line );
-                    cas = END;
-                    break;
-                }
-
-                f.get(buf);
-                if( isNumber(buf)){
-                    col += 2;
-                    s += ch;
-                    s += buf;
-                    while (isNumber(ch)) {
+            case NUMBER:
+                if (!point){
+                    while (isNumber(ch) && !f.eof()){
                         col++;
                         s += ch;
+                        f.get(ch);
+                    }
+                    if (ch == '.' && !point && !f.eof()){
+                        f.get(buf);
+                        point = true;
+                        break;
+                    }
+
+                    if (f.eof()){
+
+                        if (point)
+
+                            t = new Token("float", _FLOAT, s, "", col, line);
+
+                        else
+
+                            t = new Token("integer", _INTEGER, s, "", col, line);
+
+                        cas = END;
+
+                        break;
+
+                    }
+
+                    f.get(buf);
+                    if (isNumber(buf)){
+                        col += 2;
+                        s += ch;
+                        s += buf;
+                        while (isNumber(ch)) {
+                            col++;
+                            s += ch;
+
+                        }
+                    }
+                    if (ch != '.'){
+
+                        if (isSpace(ch) || isSeparation(ch) || f.eof()){   //поправить
+                            t = new Token("integer", _INTEGER, s, "", col, line);
+                            success = true;
+                            if (isSeparation(ch))
+                                buf = ch;
+                            break;
+                        }
+
+                        else  throw MyException("wrong identifier", line, col);
+
 
                     }
                 }
+                else{
+                    s += ".";
+                    ch = buf;
+                    while (isNumber(ch) && !f.eof()){
+                        col++;
+                        s += ch;
+                        f.get(ch);
 
-            if ( isSpace(ch) || isSeparation(ch)){
-                t = new Token("integer", _INTEGER, s, "",col, line );
-                success = true;
-                buf = ch;
-                break;
-            }
+                    }
+                    if (ch != '.'){
+                        if (isSpace(ch) || isSeparation(ch) || f.eof()){
+                            col++;
+                            t = new Token("float", _FLOAT, s, "", col, line);
+                            f.eof() ? cas = END : success = true;
+                            if (isSeparation(ch))
+                                buf = ch;
+                            break;
+                        }
+                        else
+                            throw MyException("wrong identifier", line, col);
 
-            else  throw MyException("wrong identifier",line,col);
-    }
+                    }
+                    else  throw MyException("wrong identifier", line, col);
 
-            else{
-                f.get(ch);
-                while( isNumber(ch)){
-                    col++;
-                    s +=ch;
+                    break;
+                }
+
+            case SYMBOL:
+                while (isSymbol(ch) && !f.eof()){
+
+                    s += ch;
                     f.get(ch);
 
                 }
-                if ( isSpace(ch) || isSeparation(ch)){
+
+                if (keyWords.count(s)){
                     col++;
-                    t = new Token("float", _FLOAT, s ,"", col, line );
-                    f.eof() ? cas = END :success = true;
-                    buf = ch;
+                    t = new Token("keyword", _KEYWORD, s, keyWords[s], col, line);
+                    cas = BEGIN;
                     break;
                 }
-                else
-                    throw MyException("wrong identifier",line,col);
 
+                while ((isNumber(ch) || isSymbol(ch)) && !f.eof()) {
+                    col++;
+
+                    s += ch;
+                    f.get(ch);
+                }
+                buf = ch;
+                t = new Token("identifer", _IDENTIFIER, s, "", col, line);
+                f.eof() ? cas = END : success = true;
+                break;
+
+            case SEPARATION:
+                f.get(buf);
+                col++;
+                if ((buf == '/' || buf == '*') && ch == '/'){
+                    cas = COMMENT;
+                    break;
+                }
+                s += ch;
+                f.eof() ? cas = END : success = true;
+                t = new Token("separation", _SEPARATION, s, Separations[s], col, line);
+                break;
+            case STRINGT:
+                
+                f.get(ch);
+                
+                f.get(buf);
+                
+                col += 2;
+                
+                
+                
+                while (((buf != '\"') && (buf != '\n') && (!f.eof())) ||
+                       
+                       ((ch == 92) && (buf == '\"') && (buf != '\n') && (!f.eof()))){
+                    
+                    s += ch;
+                    
+                    ch = buf;
+                    
+                    f.get(buf);
+                    
+                    col++;
+                    
+                }
+                
+                
+                
+                if (buf == '\"'){
+                    
+                    s += ch;
+                    
+                    f.get(buf);
+                    
+                    col++;
+                    
+                }
+                else
+                    
+                    throw MyException("\n There is no closing quote", line, col);
+                
+                
+                
+                f.eof() ? cas = END : success = true;
+                
+                t = new Token("string", _STRING, "\"" + s + "\"", s, line, col);
+                
+                
                 
                 break;
-            }
-
-        case SYMBOL:
-            while( isSymbol(ch)){
-
-                s += ch;
-                f.get(ch);
-
-            }
-
-            if ( keyWords.count(s) ){
-                col++;
-                t = new Token("keyword", _KEYWORD, s, keyWords[s], col, line);
-                cas = BEGIN;
-                break;
-            }
-
-            while (isNumber(ch) || isSymbol(ch)) {
-                    col++;
-
-                    s += ch;
-                f.get(ch);
-                }
-                 buf = ch;
-            t = new Token("identifer", _IDENTIFIER, s, "", col, line);
-              f.eof() ? cas = END :success = true;
-            break;
-            
-        case SEPARATION:
-            f.get(buf);
-            col++;
-            if (  (buf =='/' || buf == '*' )&& ch =='/' ){
-                cas = COMMENT;
-                break;
-            }
-            s += ch;
-            f.eof() ? cas = END :success = true;
-            t = new Token("separation", _SEPARATION, s, Separations[s], col ,line);
-            break;
-        case STRINGT:
-            f.get(ch);
-            f.get(buf);
-            col+=2;
-
-            while(((buf != '\"') && (buf != '\n') && (!f.eof()) )||
-                  ((ch == 92) && (buf == '\"') && (buf != '\n') && (!f.eof()))){
-                s += ch;
-                ch = buf;
-                f.get(buf);
-                col++;
-            }
-
-            if(buf == '\"'){
-                s += ch;
-                f.get(buf);
-                col++;
-            } else
-                throw MyException("\n There is no closing quote", line, col);
-
-             f.eof() ? cas  = END : success = true;
-            t = new Token("string", _STRING,"\""+ s +"\"",s,line, col);
-
-            break;
-        case COMMENT:
-            if( buf == '/'){
-               while (ch != '\n') {
-                   col++;
-                   f.get(ch);
-
-               }
-                t = new Token("comment", _COMMENT, s, "not usable text", col, line);
-            }
-            else{
-                while ((ch != '*' || buf != '/') && !f.eof()){
-                    col += 2;
-                    if ( ch =='\n'){
-                        col = 0;
-                        line++;
+                
+            case COMMENT:
+                if (buf == '/'){
+                    while (ch != '\n') {
+                        col++;
+                        f.get(ch);
+                        
                     }
-                    f.get(ch);
-                    f.get(buf);
+                    t = new Token("comment", _COMMENT, s, "not usable text", col, line);
                 }
-                if( ch != '*' && buf != '/' && f.eof()){
-                    throw new MyException("There is no closing comment");
+                else{
+                    while ((ch != '*' || buf != '/') && !f.eof()){
+                        col += 2;
+                        if (ch == '\n'){
+                            col = 0;
+                            line++;
+                        }
+                        f.get(ch);
+                        f.get(buf);
+                    }
+                    if (ch != '*' && buf != '/' && f.eof()){
+                        throw new MyException("There is no closing comment");
+                    }
+                    t = new Token("Multiline comment", _COMMENT, s, "not usable text", col, line);
                 }
-                t = new Token("Multiline comment", _COMMENT, s, "not usable text", col, line);
-            }
-            f.get(ch);
-            buf = 1;
-            f.eof() ?cas = END : success = true;
-
-            break;
-
-        case CHARs:
-            f.get(ch);
-            col++;
-            if (ch == '\'')
-                throw MyException("\n There is no character in single quotes", line, col);
-            if (ch == '\\'){
-                success = true;
                 f.get(ch);
-                col++;
-                if (ch  == 't')
-                    s += '\t';
-                else if (ch == 'n')
-                    s += '\n';
-                else
-                    s += ch;
-                f.get(ch);
-                col++;
-                if (ch != '\'' || f.eof()){
-                    if(f.eof())
-                        s = "\n Unexpected end of file";
-                    else
-                        s = "\n There is no closing quote";
-                    throw MyException(s, line, col);
-                } else {
-                    t = new Token("char", _CHAR,s,s,line, col);
-                    col ++;
-                    f.get(buf);
-                    if (f.eof())
-                        cas= END;
-                    break;
-                }
-            }
-            s += ch;
-            f.get(ch);
-            col++;
-            if (ch != '\'')
-                throw MyException( "\n Too many characters in quotes", line, col);
-            else {
-                t = new Token("char", _CHAR,s,s,line, col);
-                col ++;
-                f.get(buf);
-                f.eof() ?cas = END : success = true;
+                buf = 1;
+                f.eof() ? cas = END : success = true;
+                
                 break;
-            }
-        case END:
-            end_of_file = true;
-            return last_token = true;
-        default:
-            break;
-
-
-    }
-
-        return end_of_file ;
-    }
+                
+                
+            case CHARs:
+                
+                f.get(ch);
+                col++;
+                
+                if (ch == '\'')
+                    
+                    throw MyException("\n There is no character in single quotes", line, col);
+                
+                if (ch == '\\'){
+                    
+                    success = true;
+                    
+                    f.get(ch);
+                    col++;
+                    
+                    if (ch == 't')
+                        
+                        s += '\t';
+                    
+                    else if (ch == 'n')
+                        
+                        s += '\n';
+                    
+                    else
+                        
+                        s += ch;
+                    
+                    f.get(ch);
+                    col++;
+                    
+                    if (ch != '\'' || f.eof()){
+                        
+                        if (f.eof())
+                            
+                            s = "\n Unexpected end of file";
+                        
+                        else
+                            
+                            s = "\n There is no closing quote";
+                        
+                        throw MyException(s, line, col);
+                        
+                    }
+                    else {
+                        
+                        t = new Token("char", _CHAR, s, s, line, col);
+                        
+                        col++;
+                        
+                        f.get(buf);
+                        
+                        if (f.eof())
+                            
+                            cas = END;
+                        
+                        break;
+                        
+                    }
+                    
+                }
+                
+                s += ch;
+                
+                f.get(ch);
+                col++;
+                
+                if (ch != '\'')
+                    
+                    throw MyException("\n Too many characters in quotes", line, col);
+                
+                else {
+                    
+                    t = new Token("char", _CHAR, s, s, line, col);
+                    
+                    col++;
+                    
+                    f.get(buf);
+                    
+                    f.eof() ? cas = END : success = true;
+                    
+                    break;
+                    
+                }
+            case END:
+                end_of_file = true;
+                return last_token = true;
+            default:
+                break;
+                
+                
+                
+        }
     
+    return end_of_file;
+}
+
 
 
 
@@ -485,73 +577,76 @@ int main(int argc, char *argv[]){
     createKeyWords();
     createOperations();
     argv[1] = "-t";
-    argv[2] = "05.txt";
-
+    argv[2] = "16.in";
+    
     try{
-
-            if(!(strcmp(argv[1] , "-help"))){
-                cout << "-f - write to the file + output to the screen (lexer)" << endl <<
-                "-s - output to the screen (lexel)" << endl <<
-                "-t - write to the file (lexer)" << endl ;
-
-            }
+        
+        if (!(strcmp(argv[1], "-help"))){
+            cout << "-f - write to the file + output to the screen (lexer)" << endl <<
+            "-s - output to the screen (lexel)" << endl <<
+            "-t - write to the file (lexer)" << endl;
+            
+        }
         if (!(strcmp(argv[1], "-f"))) {
             try{
-                    ifstream *f = new ifstream;
-                    f->open(argv[2], ios :: in);
-                    ofstream *g = new ofstream;
-                    output = g;
-                    g->open(get_out_addr(argv[2]), ios :: out);
-                    Scanner a(argv[2]);
-
-                    while(!a.isEnd()){
-                        a.Next();
-                        a.Get()->Print(g);
-                        a.Get()->Print();
-                    }
-                    g->close();
-                    delete g;
-                    f->close();
-                    delete f;
-
+                ifstream *f = new ifstream;
+                f->open(argv[2], ios::in);
+                ofstream *g = new ofstream;
+                output = g;
+                g->open(get_out_addr(argv[2]), ios::out);
+                Scanner a(argv[2]);
+                
+                while (!a.isEnd()){
+                    a.Next();
+                    a.Get()->Print(g);
+                    a.Get()->Print();
+                }
+                g->close();
+                delete g;
+                f->close();
+                delete f;
+                
             }
-            catch(MyException &e){
+            catch (MyException &e){
                 e.Print();
                 e.Print(output);
                 output->close();
             }
             
-        }else
-            if(!(strcmp(argv[1] , "-t"))){
+        }
+        else
+            if (!(strcmp(argv[1], "-t"))){
                 try{
-                        ifstream *f = new ifstream;
-                        f->open(argv[2], ios :: in);
-                        ofstream *g = new ofstream;
-                        output = g;
-                        g->open(get_out_addr(argv[2]), ios ::out);
-                        Scanner a(argv[2]);
-                        while(!a.isEnd()){
-                            a.Next();
-                            a.Get()->Print(g);
-                        }
-                        g->close();
-                        delete g;
-                        
-                        f->close();
-                        delete f;
-                }catch(MyException &e){
+                    ifstream *f = new ifstream;
+                    f->open(argv[2], ios::in);
+                    ofstream *g = new ofstream;
+                    output = g;
+                    g->open(get_out_addr(argv[2]), ios::out);
+                    Scanner a(argv[2]);
+                    while (!a.isEnd()){
+                        a.Next();
+                        a.Get()->Print(g);
+                    }
+                    g->close();
+                    delete g;
+                    
+                    f->close();
+                    delete f;
+                }
+                catch (MyException &e){
                     e.Print(output);
                     output->close();
                 }
             }
-
-    }catch(MyException &e){
-            e.Print();
-            if(output){
-                e.Print(output);
-                output->close();
-            }
-        }
         
-        return 0;
+    }
+    catch (MyException &e){
+        e.Print();
+        if (output){
+            e.Print(output);
+            output->close();
+        }
+    }
+    
+    return 0;
 }
