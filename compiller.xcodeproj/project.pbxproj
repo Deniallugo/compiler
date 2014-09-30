@@ -28,7 +28,7 @@
 		838CA0CA19C9B7D2007A9FAE /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		838CA0D119C9B7F1007A9FAE /* scanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = scanner.cpp; sourceTree = "<group>"; usesTabs = 0; };
 		838CA0D219C9B7F1007A9FAE /* scanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scanner.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
-		83DFE48719D93D3D0081CCE8 /* 01.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = 01.in; sourceTree = "<group>"; };
+		83D8AD5019DA297200A69BFB /* Script.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = Script.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +47,7 @@
 			children = (
 				838CA0C919C9B7D2007A9FAE /* compiller */,
 				838CA0C819C9B7D2007A9FAE /* Products */,
+				83D8AD5019DA297200A69BFB /* Script.sh */,
 			);
 			sourceTree = "<group>";
 		};
@@ -64,7 +65,6 @@
 				838CA0CA19C9B7D2007A9FAE /* main.cpp */,
 				838CA0D119C9B7F1007A9FAE /* scanner.cpp */,
 				838CA0D219C9B7F1007A9FAE /* scanner.h */,
-				83DFE48719D93D3D0081CCE8 /* 01.in */,
 			);
 			path = compiller;
 			sourceTree = "<group>";

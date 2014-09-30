@@ -5,37 +5,17 @@
 //  Created by Данил on 17.09.14.
 //  Copyright (c) 2014 Данил. All rights reserved.
 //
+
 #pragma once
 
 #include <map>
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <stdio.h>
 
 
 using namespace std;
-map< string, string> keyWords;
-map< string, string> Operations;
-map< string, string> Separations;
-
-int col = 0;
-int line = 0;
-
-
-enum States{
-    BEGIN,
-    NUMBER,
-    OPERATION,
-    SEPARATION,
-    WHITESPACE,
-    CHARs,
-    STRINGT,
-    SYMBOL,
-    OK,
-    END,
-    COMMENT
-
-};
 
 
 enum TYPES {
@@ -52,12 +32,12 @@ enum TYPES {
     
     
 };
-void insert(map<string, string> m, string s1, string s2){
-   m.insert(make_pair(s1, s2));
-    
-}
-void createKeyWords();
 
+
+
+ void createKeyWords();
+
+ void createOperations();
 
 class Token{
 public:
@@ -81,11 +61,10 @@ class Scanner {
 private:
     
     ifstream f;
-    int line;
-    int col; // исправить колумн на колонку переделать 
     Token* t;
     char buf = 1;
     bool end_of_file, last_token;
+    int col, line;
 public:
     bool isEnd();
     Token* Get();

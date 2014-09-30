@@ -6,19 +6,38 @@
 //  Copyright (c) 2014 Данил. All rights reserved.
 //
 #include "scanner.h"
-static string get_out_addr(const string& in){
-    string out = in;
-    out.erase(out.find('.') + 1);
-    out += "out";
-    return out;
-}
 
-bool isNumber(char c){
+
+static map< string, string> keyWords;
+static map< string, string> Operations;
+static map< string, string> Separations;
+
+static int col = 0;
+static int line = 0;
+
+
+enum States{
+    BEGIN,
+    NUMBER,
+    OPERATION,
+    SEPARATION,
+    WHITESPACE,
+    CHARs,
+    STRINGT,
+    SYMBOL,
+    OK,
+    END,
+    COMMENT
+
+};
+
+
+static bool isNumber(char c){
 
     return (c >= '0' && c <= '9');
 }
 
-bool isSymbol(char c){
+static bool isSymbol(char c){
 
     return ((c >= 'a' && c <= 'z') ||
             (c >= 'A' && c <= 'Z') ||
@@ -89,7 +108,7 @@ bool Scanner::isEnd(){
 }
 
 
-void createKeyWords(){
+ void createKeyWords(){
 
     keyWords["for"] = "kwFor";
     keyWords["bool"] = "kwBool";
@@ -122,7 +141,7 @@ void createKeyWords(){
 
 }
 
-void createOperations(){
+ void createOperations(){
     Operations["+"] = "plus";
     Operations["-"] = "minus";
     Operations["*"] = "mul";
@@ -290,11 +309,11 @@ bool Scanner::Next(){
 
                         if (point)
 
-                            t = new Token("float", _FLOAT, s, "", col, line);
+                            t = new Token("float", _FLOAT, s, s, col, line);
 
                         else
 
-                            t = new Token("integer", _INTEGER, s, "", col, line);
+                            t = new Token("integer", _INTEGER, s, s, col, line);
 
                         cas = END;
 
@@ -313,10 +332,26 @@ bool Scanner::Next(){
 
                         }
                     }
+                    f.get(buf);
+                    if ( ch == 'e'){
+                        if ( isNumber(buf) || buf == '+' || buf == '-'){
+                            col += 2;
+                            s +=ch;
+                            s += buf;
+                            f.get(ch);
+                            while (isNumber(ch) && !f.eof() ) {
+                                col++;
+                                s += ch;
+                                f.get(ch);
+                            }
+                             t = new Token("integer", _INTEGER, s, s, col, line);
+                        }
+
+                    }
                     if (ch != '.'){
 
                         if (isSpace(ch) || isSeparation(ch) || f.eof()){   //поправить
-                            t = new Token("integer", _INTEGER, s, "", col, line);
+                            t = new Token("integer", _INTEGER, s, s, col, line);
                             success = true;
                             if (isSeparation(ch))
                                 buf = ch;
@@ -337,21 +372,34 @@ bool Scanner::Next(){
                         f.get(ch);
 
                     }
-                    if (ch != '.'){
-                        if (isSpace(ch) || isSeparation(ch) || f.eof()){
-                            col++;
-                            t = new Token("float", _FLOAT, s, "", col, line);
-                            f.eof() ? cas = END : success = true;
-                            if (isSeparation(ch))
-                                buf = ch;
-                            break;
+                    f.get(buf);
+                    if ( ch == 'e'){
+                        if ( isNumber(buf) || buf == '+' || buf == '-'){
+                            col += 2;
+                            s +=ch;
+                            s += buf;
+                            f.get(ch);
+                            while (isNumber(ch) && !f.eof() ) {
+                                col++;
+                                s += ch;
+                                f.get(ch);
+                            }
+                            t = new Token("integer", _INTEGER, s, s, col, line);
                         }
-                        else
-                            throw MyException("wrong identifier", line, col);
 
                     }
-                    else  throw MyException("wrong identifier", line, col);
-
+                    if (ch == '.')
+                        throw MyException("wrong identifier", line, col);
+                    if (isSpace(ch) || isSeparation(ch) || f.eof()){
+                        col++;
+                        t = new Token("float", _FLOAT, s, s, col, line);
+                        f.eof() ? cas = END : success = true;
+                        if (isSeparation(ch))
+                            buf = ch;
+                        break;
+                    }
+                    else
+                        throw MyException("wrong identifier", line, col);
                     break;
                 }
 
@@ -377,7 +425,7 @@ bool Scanner::Next(){
                     f.get(ch);
                 }
                 buf = ch;
-                t = new Token("identifer", _IDENTIFIER, s, "", col, line);
+                t = new Token("identifer", _IDENTIFIER, s, s, col, line);
                 f.eof() ? cas = END : success = true;
                 break;
 
@@ -393,52 +441,28 @@ bool Scanner::Next(){
                 t = new Token("separation", _SEPARATION, s, Separations[s], col, line);
                 break;
             case STRINGT:
-                
+
                 f.get(ch);
-                
                 f.get(buf);
-                
                 col += 2;
-                
-                
-                
                 while (((buf != '\"') && (buf != '\n') && (!f.eof())) ||
-                       
                        ((ch == 92) && (buf == '\"') && (buf != '\n') && (!f.eof()))){
-                    
                     s += ch;
-                    
                     ch = buf;
-                    
                     f.get(buf);
-                    
                     col++;
-                    
                 }
-                
-                
-                
+
                 if (buf == '\"'){
-                    
                     s += ch;
-                    
                     f.get(buf);
-                    
                     col++;
-                    
                 }
                 else
-                    
                     throw MyException("\n There is no closing quote", line, col);
-                
-                
-                
+
                 f.eof() ? cas = END : success = true;
-                
                 t = new Token("string", _STRING, "\"" + s + "\"", s, line, col);
-                
-                
-                
                 break;
                 
             case COMMENT:
@@ -482,77 +506,45 @@ bool Scanner::Next(){
                     throw MyException("\n There is no character in single quotes", line, col);
                 
                 if (ch == '\\'){
-                    
                     success = true;
-                    
                     f.get(ch);
                     col++;
-                    
                     if (ch == 't')
-                        
                         s += '\t';
-                    
                     else if (ch == 'n')
-                        
                         s += '\n';
-                    
                     else
-                        
                         s += ch;
-                    
                     f.get(ch);
                     col++;
-                    
                     if (ch != '\'' || f.eof()){
-                        
                         if (f.eof())
-                            
                             s = "\n Unexpected end of file";
-                        
                         else
-                            
                             s = "\n There is no closing quote";
                         
                         throw MyException(s, line, col);
-                        
                     }
                     else {
-                        
                         t = new Token("char", _CHAR, s, s, line, col);
-                        
                         col++;
-                        
                         f.get(buf);
-                        
                         if (f.eof())
-                            
                             cas = END;
-                        
                         break;
-                        
                     }
-                    
                 }
-                
                 s += ch;
-                
                 f.get(ch);
                 col++;
-                
                 if (ch != '\'')
-                    
                     throw MyException("\n Too many characters in quotes", line, col);
                 
                 else {
-                    
                     t = new Token("char", _CHAR, s, s, line, col);
-                    
                     col++;
-                    
                     f.get(buf);
-                    
                     f.eof() ? cas = END : success = true;
-                    
                     break;
                     
                 }
@@ -561,92 +553,10 @@ bool Scanner::Next(){
                 return last_token = true;
             default:
                 break;
-                
-                
-                
+
         }
-    
     return end_of_file;
 }
 
 
 
-
-int main(int argc, char *argv[]){
-    ofstream *output = 0;
-    createKeyWords();
-    createOperations();
-    argv[1] = "-t";
-    argv[2] = "16.in";
-    
-    try{
-        
-        if (!(strcmp(argv[1], "-help"))){
-            cout << "-f - write to the file + output to the screen (lexer)" << endl <<
-            "-s - output to the screen (lexel)" << endl <<
-            "-t - write to the file (lexer)" << endl;
-            
-        }
-        if (!(strcmp(argv[1], "-f"))) {
-            try{
-                ifstream *f = new ifstream;
-                f->open(argv[2], ios::in);
-                ofstream *g = new ofstream;
-                output = g;
-                g->open(get_out_addr(argv[2]), ios::out);
-                Scanner a(argv[2]);
-                
-                while (!a.isEnd()){
-                    a.Next();
-                    a.Get()->Print(g);
-                    a.Get()->Print();
-                }
-                g->close();
-                delete g;
-                f->close();
-                delete f;
-                
-            }
-            catch (MyException &e){
-                e.Print();
-                e.Print(output);
-                output->close();
-            }
-            
-        }
-        else
-            if (!(strcmp(argv[1], "-t"))){
-                try{
-                    ifstream *f = new ifstream;
-                    f->open(argv[2], ios::in);
-                    ofstream *g = new ofstream;
-                    output = g;
-                    g->open(get_out_addr(argv[2]), ios::out);
-                    Scanner a(argv[2]);
-                    while (!a.isEnd()){
-                        a.Next();
-                        a.Get()->Print(g);
-                    }
-                    g->close();
-                    delete g;
-                    
-                    f->close();
-                    delete f;
-                }
-                catch (MyException &e){
-                    e.Print(output);
-                    output->close();
-                }
-            }
-        
-    }
-    catch (MyException &e){
-        e.Print();
-        if (output){
-            e.Print(output);
-            output->close();
-        }
-    }
-    
-    return 0;
-}
