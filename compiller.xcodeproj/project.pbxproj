@@ -24,6 +24,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		834DF0BD19DAB305002F6EE2 /* Tester.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Tester.sh; sourceTree = "<group>"; };
 		838CA0C719C9B7D2007A9FAE /* compiller */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = compiller; sourceTree = BUILT_PRODUCTS_DIR; };
 		838CA0CA19C9B7D2007A9FAE /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		838CA0D119C9B7F1007A9FAE /* scanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = scanner.cpp; sourceTree = "<group>"; usesTabs = 0; };
@@ -62,9 +63,10 @@
 		838CA0C919C9B7D2007A9FAE /* compiller */ = {
 			isa = PBXGroup;
 			children = (
-				838CA0CA19C9B7D2007A9FAE /* main.cpp */,
 				838CA0D119C9B7F1007A9FAE /* scanner.cpp */,
 				838CA0D219C9B7F1007A9FAE /* scanner.h */,
+				838CA0CA19C9B7D2007A9FAE /* main.cpp */,
+				834DF0BD19DAB305002F6EE2 /* Tester.sh */,
 			);
 			path = compiller;
 			sourceTree = "<group>";

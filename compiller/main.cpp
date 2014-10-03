@@ -19,18 +19,18 @@ int main(int argc, char *argv[]){
     ofstream *output = 0;
     createKeyWords();
     createOperations();
-    //argv[1] = "-t";
-    //argv[2] = "16.in";
+  //  argv[1] = "-s";
+    //  argv[2] = "30.in";
 
     try{
 
         if (!(strcmp(argv[1], "-help"))){
-            cout << "-f - write to the file + output to the screen (lexer)" << endl <<
+            cout <<"-help" << "-f - write to the file + output to the screen (lexer)" << endl <<
             "-s - output to the screen (lexel)" << endl <<
             "-t - write to the file (lexer)" << endl;
 
         }
-        if (!(strcmp(argv[1], "-f"))) {
+        if (!(strcmp(argv[1], "-t"))) {
             try{
                 ifstream *f = new ifstream;
                 f->open(argv[2], ios::in);
@@ -92,14 +92,14 @@ int main(int argc, char *argv[]){
                     Scanner a(argv[2]);
                     while (!a.isEnd()){
                         a.Next();
+                        a.Get()->Print();
                     }
 
                     f->close();
                     delete f;
                 }
                 catch (MyException &e){
-                    e.Print(output);
-                    output->close();
+                    e.Print();
                 }
             }
 

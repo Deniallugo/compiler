@@ -12,8 +12,6 @@ static map< string, string> keyWords;
 static map< string, string> Operations;
 static map< string, string> Separations;
 
-static int col = 0;
-static int line = 0;
 
 
 enum States{
@@ -32,12 +30,12 @@ enum States{
 };
 
 
-static bool isNumber(char c){
+bool Scanner::isNumber(char c){
 
     return (c >= '0' && c <= '9');
 }
 
-static bool isSymbol(char c){
+bool Scanner::isSymbol(char c){
 
     return ((c >= 'a' && c <= 'z') ||
             (c >= 'A' && c <= 'Z') ||
@@ -45,7 +43,7 @@ static bool isSymbol(char c){
             );
 }
 
-static bool isOperation(char c){
+bool Scanner::isOperation(char c){
     return  c == '<' ||
     c == '>' ||
     c == '=' ||
@@ -61,7 +59,7 @@ static bool isOperation(char c){
     c == '!';
 }
 
-static bool isSeparation(char c){
+bool  Scanner::isSeparation(char c){
 
     return (c == '{' ||
             c == '}' ||
@@ -76,14 +74,14 @@ static bool isSeparation(char c){
             );
 }
 
-static bool isSpace(char c){
-    if (c == '\t'){
+bool Scanner::isSpace(char c){
+    if (c == '\n' || c == '\r'){
         line++;
         col = 0;
         return true;
     }
     else
-        if (c == ' ' || c == '\n'){
+        if (c == ' ' || c == '\t'){
             col++;
             return true;
         }
@@ -91,14 +89,6 @@ static bool isSpace(char c){
 }
 
 
-bool isInteger(string s){
-    return 0;
-}
-
-bool isFloat(){
-    return 0;
-
-}
 Scanner::~Scanner(void){
     delete t;
 }
@@ -181,7 +171,7 @@ Token::Token(string _sType, TYPES _type, string _Value, string _Text, int _num, 
 };
 
 void Token::Print() const{
-    cout << sType << string(13 - sType.length(), ' ') << Value << line << "\t" << num << "\t" << Text << string(Text.length(), ' ') << endl;
+    cout << sType << string(13 - sType.length(), ' ') << Value <<"\t line:"<< line << "\t col:" << num << "\t" << Text << string(Text.length(), ' ') << endl;
 }
 
 void Token::Print(ofstream *t) const{
@@ -224,14 +214,13 @@ bool Scanner::Next(){
 
         end_of_file = true;
 
-        throw MyException("File is empty");;
+        throw MyException("File is empty");
 
     }
     if (buf == 1){
         f.get(buf);
         col++;
     }
-
     string s = "";
 
     ch = buf;
@@ -280,18 +269,25 @@ bool Scanner::Next(){
                         }
                         col++;
                     }
-                    t = new Token("Operation", _OPERATION, s, Operations[s], col, line);
+                    t = new Token("Operation", _OPERATION, s + "\t", Operations[s], col, line);
                     f.eof() ? cas = END : success = true;
                     buf = 1;
                     break;
 
                 }
 
-                else if (isSpace(ch)){
-                    success = true;
-                    buf = 1;
+                if (isSpace(ch)){
+                        f.get(ch);
+                        if(f.eof()){
+                            cas = END ;
+                            t = new Token("End", _END_OF_FILE, "", "", col, line);
+                            break;
+                        }
+
+                    //f.get(buf);
                     break;
                 }
+                throw MyException("\n There are no symbols in file or unknown symbol");
             case NUMBER:
                 if (!point){
                     while (isNumber(ch) && !f.eof()){
@@ -315,23 +311,12 @@ bool Scanner::Next(){
 
                             t = new Token("integer", _INTEGER, s, s, col, line);
 
-                        cas = END;
+                        f.eof() ? cas = END : success = true;
 
                         break;
 
                     }
 
-                    f.get(buf);
-                    if (isNumber(buf)){
-                        col += 2;
-                        s += ch;
-                        s += buf;
-                        while (isNumber(ch)) {
-                            col++;
-                            s += ch;
-
-                        }
-                    }
                     f.get(buf);
                     if ( ch == 'e'){
                         if ( isNumber(buf) || buf == '+' || buf == '-'){
@@ -345,6 +330,9 @@ bool Scanner::Next(){
                                 f.get(ch);
                             }
                              t = new Token("integer", _INTEGER, s, s, col, line);
+                            f.eof() ? cas = END : success = true;
+
+
                         }
 
                     }
@@ -352,13 +340,13 @@ bool Scanner::Next(){
 
                         if (isSpace(ch) || isSeparation(ch) || f.eof()){   //поправить
                             t = new Token("integer", _INTEGER, s, s, col, line);
-                            success = true;
+                            f.eof() ? cas = END : success = true;
                             if (isSeparation(ch))
                                 buf = ch;
                             break;
                         }
 
-                        else  throw MyException("wrong identifier", line, col);
+                        else  throw MyException("\n wrong identifier", line, col);
 
 
                     }
@@ -385,11 +373,13 @@ bool Scanner::Next(){
                                 f.get(ch);
                             }
                             t = new Token("integer", _INTEGER, s, s, col, line);
+                            f.eof() ? cas = END : success = true;
+
                         }
 
                     }
                     if (ch == '.')
-                        throw MyException("wrong identifier", line, col);
+                        throw MyException("\n wrong identifier", line, col);
                     if (isSpace(ch) || isSeparation(ch) || f.eof()){
                         col++;
                         t = new Token("float", _FLOAT, s, s, col, line);
@@ -399,7 +389,8 @@ bool Scanner::Next(){
                         break;
                     }
                     else
-                        throw MyException("wrong identifier", line, col);
+                        throw MyException("\n wrong identifier", line, col);
+
                     break;
                 }
 
@@ -414,8 +405,10 @@ bool Scanner::Next(){
                 if (keyWords.count(s)){
                     col++;
                     t = new Token("keyword", _KEYWORD, s, keyWords[s], col, line);
-                    cas = BEGIN;
-                    break;
+                    f.get(buf);
+                    f.eof() ? cas = END : success = true;
+
+                   break;
                 }
 
                 while ((isNumber(ch) || isSymbol(ch)) && !f.eof()) {
@@ -425,7 +418,7 @@ bool Scanner::Next(){
                     f.get(ch);
                 }
                 buf = ch;
-                t = new Token("identifer", _IDENTIFIER, s, s, col, line);
+                t = new Token("identifer", _IDENTIFIER, s, "identifier :" + s, col, line);
                 f.eof() ? cas = END : success = true;
                 break;
 
@@ -438,7 +431,7 @@ bool Scanner::Next(){
                 }
                 s += ch;
                 f.eof() ? cas = END : success = true;
-                t = new Token("separation", _SEPARATION, s, Separations[s], col, line);
+                t = new Token("separation", _SEPARATION, s + "\t", Separations[s], col, line);
                 break;
             case STRINGT:
 
@@ -461,18 +454,20 @@ bool Scanner::Next(){
                 else
                     throw MyException("\n There is no closing quote", line, col);
 
+                f.get(buf);
+                t = new Token("string", _STRING, "\"" + s + "\"", s, col, line);
                 f.eof() ? cas = END : success = true;
-                t = new Token("string", _STRING, "\"" + s + "\"", s, line, col);
                 break;
                 
             case COMMENT:
                 if (buf == '/'){
-                    while (ch != '\n') {
+                    while (ch != '\n' && !f.eof()) {
                         col++;
                         f.get(ch);
                         
                     }
                     t = new Token("comment", _COMMENT, s, "not usable text", col, line);
+
                 }
                 else{
                     while ((ch != '*' || buf != '/') && !f.eof()){
@@ -481,13 +476,21 @@ bool Scanner::Next(){
                             col = 0;
                             line++;
                         }
+
                         f.get(ch);
-                        f.get(buf);
+                        if (ch == '*'){
+                            f.get(buf);
+                            if (buf != '/') {
+                                ch = buf;
+                            }
+                        }
                     }
-                    if (ch != '*' && buf != '/' && f.eof()){
-                        throw new MyException("There is no closing comment");
+                    if (ch != '/' && buf != '*' && f.eof()){
+                        throw new MyException("\n here is no closing comment");
                     }
-                    t = new Token("Multiline comment", _COMMENT, s, "not usable text", col, line);
+                     t = new Token("multi_comment", _COMMENT, s, "not usable text", col, line);
+              
+
                 }
                 f.get(ch);
                 buf = 1;
@@ -506,6 +509,8 @@ bool Scanner::Next(){
                     throw MyException("\n There is no character in single quotes", line, col);
                 
                 if (ch == '\\'){
+
+
                     success = true;
                     f.get(ch);
                     col++;

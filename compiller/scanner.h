@@ -28,7 +28,8 @@ enum TYPES {
     _CHAR,
     _COMMENT,
     _IDENTIFIER,
-    _KEYWORD
+    _KEYWORD,
+    _END_OF_FILE
     
     
 };
@@ -64,8 +65,13 @@ private:
     Token* t;
     char buf = 1;
     bool end_of_file, last_token;
-    int col, line;
+    int col = 0, line = 1;
 public:
+    static bool isSeparation(char c);
+    bool isSpace( char c);
+    static bool isOperation( char c);
+    static bool isNumber (char c);
+    static bool isSymbol (char c);
     bool isEnd();
     Token* Get();
     bool Next();
