@@ -5,7 +5,7 @@
 //  Created by Данил on 03.10.14.
 //  Copyright (c) 2014 Данил. All rights reserved.
 //
-/*#pragma once
+#pragma once
 #include <stdio.h>
 #include "scanner.h"
 
@@ -82,4 +82,3 @@ ExprNode* ParseFactor(){
         
         throw SyntaxError
     }
- */

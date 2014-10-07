@@ -19,7 +19,10 @@ int main(int argc, char *argv[]){
     ofstream *output = 0;
     createKeyWords();
     createOperations();
-
+   /// argc = 2;
+  //  argv[1] = "-f";
+   // argv[2] = "./Test/Lexer/01.in";
+ //   string ds = argv[3];
     try{
         if(argc == 1)
             throw MyException("Running without parameters");

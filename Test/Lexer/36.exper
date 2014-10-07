@@ -1,0 +1,15 @@
+keyword	char	1	2	kwChar      
+identifer	a	1	2	identifier :a             
+Operation	=		1	4	
+char	s	7	1	s 
+separation	;		1	9	
+identifer	string	2	0	identifier :string                  
+identifer	f	2	1	identifier :f             
+Operation	=		2	3	
+string	"dasasdasd"	2	15	dasasdasd         
+keyword	int	3	1	kwInteger number                  
+identifer	w	3	1	identifier :w             
+Operation	=		3	3	
+integer	5	3	5	5 
+separation	;		3	6	
+identifer	fsdafsda	3	6	identifier :fsdafsda                    

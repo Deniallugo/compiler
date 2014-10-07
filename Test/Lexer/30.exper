@@ -1,0 +1,5 @@
+keyword	int	1	2	kwInteger number                  
+identifer	a	3	0	identifier :a             
+float	.421	6	1	.421    
+multi_comment		9	0	not usable text               
+keyword	float	10	1	kwFloat       

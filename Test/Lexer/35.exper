@@ -1,0 +1,13 @@
+keyword	int	1	2	kwInteger number                  
+identifer	main	1	2	identifier :main                
+separation	(		1	3	
+separation	)		1	4	
+separation	{		1	5	
+keyword	int	2	2	kwInteger number                  
+identifer	a	2	2	identifier :a             
+Operation	=		2	4	
+identifer	a	2	5	identifier :a             
+Operation	+		2	7	plus    
+integer	5	2	9	5 
+separation	;		2	10	
+separation	}		2	11	
