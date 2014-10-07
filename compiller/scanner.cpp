@@ -1,3 +1,4 @@
+
 //
 //  scanner.cpp
 //  compiller
@@ -29,6 +30,32 @@ enum States{
 
 };
 
+void Scanner::CheckEscape(char ch , string s){
+    f.get(buf);
+    if ( ch == 'e'){
+        if ( isNumber(buf) || buf == '+' || buf == '-'){
+            col += 2;
+            s +=ch;
+            s += buf;
+            f.get(ch);
+            while (isNumber(ch) && !f.eof() ) {
+                col++;
+                s += ch;
+                f.get(ch);
+            }
+            t = new Token("integer", _INTEGER, s, s, col, line);
+
+        }
+
+    }
+}
+
+bool Scanner::ErrorIf(bool op, string message){
+    if (op)
+        throw MyException( message, line, col);
+    return op;
+
+}
 
 bool Scanner::isNumber(char c){
 
@@ -118,8 +145,8 @@ bool Scanner::isEnd(){
     keyWords["friend"] = "kwFriend ";
     keyWords["goto"] = "kwGoto";
     keyWords["if"] = "kwIf";
-    keyWords["int"] = "integer number < 2147483647";
-    keyWords["long"] = "integer number > 2147483647";
+    keyWords["int"] = "kwInteger number ";
+    keyWords["long"] = "kwLong";
     keyWords["struct"] = "kwStruct";
     keyWords["this"] = "kwThis";
     keyWords["true"] = "kwTrue";
@@ -175,21 +202,21 @@ void Token::Print() const{
 }
 
 void Token::Print(ofstream *t) const{
-    *t << sType << "\t" << Value << "\t" << line << "\t" << num << "\t" << Text << string(Text.length(), ' ') << endl;
+    *t << sType << string(13 - sType.length(), ' ') << Value <<"\t line:"<< line << "\t col:" << num << "\t" << Text << string(Text.length(), ' ') << endl;
 }
 
 void MyException::Print(ofstream *f) const{
     if (line != -1)
-        *f << massage << "\t line " << line << ", column " << col << endl;
+        *f <<"ERROR:"<< massage << "\t line " << line << ", column " << col << endl;
     else
-        *f << massage << endl;
+        *f <<"ERROR:" << massage << endl;
 }
 
 void MyException::Print() const{
     if (line != -1)
-        cout << massage << "\t line " << line << ", column " << col << endl;
+        cout <<"ERROR:" << massage << "\t line " << line << ", column " << col << endl;
     else
-        cout << massage << endl;
+        cout <<"ERROR:"<< massage << endl;
 }
 
 Token* Scanner::Get(){
@@ -208,7 +235,7 @@ bool Scanner::Next(){
     States cas = BEGIN;
     char ch;
     bool point = false;
-    if (f.eof() && (buf == 1)){
+    if (f.eof() && (buf == '#')){
 
         cas = END;
 
@@ -217,7 +244,7 @@ bool Scanner::Next(){
         throw MyException("File is empty");
 
     }
-    if (buf == 1){
+    if (buf == '#'){
         f.get(buf);
         col++;
     }
@@ -271,7 +298,7 @@ bool Scanner::Next(){
                     }
                     t = new Token("Operation", _OPERATION, s + "\t", Operations[s], col, line);
                     f.eof() ? cas = END : success = true;
-                    buf = 1;
+                    buf = '#';
                     break;
 
                 }
@@ -284,7 +311,6 @@ bool Scanner::Next(){
                             break;
                         }
 
-                    //f.get(buf);
                     break;
                 }
                 throw MyException("\n There are no symbols in file or unknown symbol");
@@ -304,50 +330,26 @@ bool Scanner::Next(){
                     if (f.eof()){
 
                         if (point)
-
                             t = new Token("float", _FLOAT, s, s, col, line);
-
                         else
-
                             t = new Token("integer", _INTEGER, s, s, col, line);
 
                         f.eof() ? cas = END : success = true;
-
                         break;
 
                     }
 
-                    f.get(buf);
-                    if ( ch == 'e'){
-                        if ( isNumber(buf) || buf == '+' || buf == '-'){
-                            col += 2;
-                            s +=ch;
-                            s += buf;
-                            f.get(ch);
-                            while (isNumber(ch) && !f.eof() ) {
-                                col++;
-                                s += ch;
-                                f.get(ch);
-                            }
-                             t = new Token("integer", _INTEGER, s, s, col, line);
-                            f.eof() ? cas = END : success = true;
-
-
-                        }
-
-                    }
+                    CheckEscape(ch, s);
+                    f.eof() ? cas = END : success = true;
                     if (ch != '.'){
 
-                        if (isSpace(ch) || isSeparation(ch) || f.eof()){   //поправить
+                        if (!ErrorIf(!isSpace(ch) && !isSeparation(ch) && !f.eof(),  "wrong number")){
                             t = new Token("integer", _INTEGER, s, s, col, line);
                             f.eof() ? cas = END : success = true;
                             if (isSeparation(ch))
                                 buf = ch;
                             break;
                         }
-
-                        else  throw MyException("\n wrong identifier", line, col);
-
 
                     }
                 }
@@ -360,39 +362,24 @@ bool Scanner::Next(){
                         f.get(ch);
 
                     }
-                    f.get(buf);
-                    if ( ch == 'e'){
-                        if ( isNumber(buf) || buf == '+' || buf == '-'){
-                            col += 2;
-                            s +=ch;
-                            s += buf;
-                            f.get(ch);
-                            while (isNumber(ch) && !f.eof() ) {
-                                col++;
-                                s += ch;
-                                f.get(ch);
-                            }
-                            t = new Token("integer", _INTEGER, s, s, col, line);
+
+                    CheckEscape(ch, s);
+                    f.eof() ? cas = END : success = true;
+
+
+                    ErrorIf(ch == '.' ,"wrong number");
+
+                    ErrorIf(!isSpace(ch) && !isSeparation(ch) && !f.eof(),  "wrong number");
+                            col++;
+                            t = new Token("float", _FLOAT, s, s, col, line);
                             f.eof() ? cas = END : success = true;
+                            if (isSeparation(ch))
+                                buf = ch;
 
-                        }
 
-                    }
-                    if (ch == '.')
-                        throw MyException("\n wrong identifier", line, col);
-                    if (isSpace(ch) || isSeparation(ch) || f.eof()){
-                        col++;
-                        t = new Token("float", _FLOAT, s, s, col, line);
-                        f.eof() ? cas = END : success = true;
-                        if (isSeparation(ch))
-                            buf = ch;
+
                         break;
                     }
-                    else
-                        throw MyException("\n wrong identifier", line, col);
-
-                    break;
-                }
 
             case SYMBOL:
                 while (isSymbol(ch) && !f.eof()){
@@ -413,10 +400,10 @@ bool Scanner::Next(){
 
                 while ((isNumber(ch) || isSymbol(ch)) && !f.eof()) {
                     col++;
-
                     s += ch;
                     f.get(ch);
                 }
+
                 buf = ch;
                 t = new Token("identifer", _IDENTIFIER, s, "identifier :" + s, col, line);
                 f.eof() ? cas = END : success = true;
@@ -438,6 +425,7 @@ bool Scanner::Next(){
                 f.get(ch);
                 f.get(buf);
                 col += 2;
+
                 while (((buf != '\"') && (buf != '\n') && (!f.eof())) ||
                        ((ch == 92) && (buf == '\"') && (buf != '\n') && (!f.eof()))){
                     s += ch;
@@ -446,13 +434,11 @@ bool Scanner::Next(){
                     col++;
                 }
 
-                if (buf == '\"'){
+                if (! ErrorIf(buf != '\"', "There is no closing quote")){
                     s += ch;
                     f.get(buf);
                     col++;
                 }
-                else
-                    throw MyException("\n There is no closing quote", line, col);
 
                 f.get(buf);
                 t = new Token("string", _STRING, "\"" + s + "\"", s, col, line);
@@ -485,15 +471,12 @@ bool Scanner::Next(){
                             }
                         }
                     }
-                    if (ch != '/' && buf != '*' && f.eof()){
-                        throw new MyException("\n here is no closing comment");
-                    }
+                    ErrorIf(ch == '/' && buf == '*' && !f.eof(), "There is no closing comment");
                      t = new Token("multi_comment", _COMMENT, s, "not usable text", col, line);
-              
 
                 }
                 f.get(ch);
-                buf = 1;
+                buf = '#';
                 f.eof() ? cas = END : success = true;
                 
                 break;
@@ -503,12 +486,8 @@ bool Scanner::Next(){
                 
                 f.get(ch);
                 col++;
-                
-                if (ch == '\'')
-                    
-                    throw MyException("\n There is no character in single quotes", line, col);
-                
-                if (ch == '\\'){
+                ErrorIf (ch == '\''," There is no character in single quotes");
+                if (ch == '\n' || f.eof()){
 
 
                     success = true;
@@ -522,37 +501,27 @@ bool Scanner::Next(){
                         s += ch;
                     f.get(ch);
                     col++;
-                    if (ch != '\'' || f.eof()){
-                        if (f.eof())
-                            s = "\n Unexpected end of file";
-                        else
-                            s = "\n There is no closing quote";
-                        
-                        throw MyException(s, line, col);
-                    }
-                    else {
-                        t = new Token("char", _CHAR, s, s, line, col);
-                        col++;
-                        f.get(buf);
-                        if (f.eof())
-                            cas = END;
-                        break;
-                    }
+                    string ms;
+                    if (f.eof())
+                        ms = " Unexpected end of file";
+                    else
+                        ms = " There is no closing quote";
+                    ErrorIf (ch != '\'' || f.eof(), ms);
+
+
+
                 }
                 s += ch;
                 f.get(ch);
                 col++;
-                if (ch != '\'')
-                    throw MyException("\n Too many characters in quotes", line, col);
-                
-                else {
-                    t = new Token("char", _CHAR, s, s, line, col);
-                    col++;
-                    f.get(buf);
-                    f.eof() ? cas = END : success = true;
-                    break;
+                ErrorIf (ch != '\'', "Too many characters in quotes");
+                t = new Token("char", _CHAR, s, s, line, col);
+                col++;
+                f.get(buf);
+                f.eof() ? cas = END : success = true;
+                break;
                     
-                }
+
             case END:
                 end_of_file = true;
                 return last_token = true;

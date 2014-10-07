@@ -19,11 +19,10 @@ int main(int argc, char *argv[]){
     ofstream *output = 0;
     createKeyWords();
     createOperations();
-  //  argv[1] = "-s";
-    //  argv[2] = "30.in";
 
     try{
-
+        if(argc == 1)
+            throw MyException("Running without parameters");
         if (!(strcmp(argv[1], "-help"))){
             cout <<"-help" << "-f - write to the file + output to the screen (lexer)" << endl <<
             "-s - output to the screen (lexel)" << endl <<
@@ -42,7 +41,6 @@ int main(int argc, char *argv[]){
                 while (!a.isEnd()){
                     a.Next();
                     a.Get()->Print(g);
-                    a.Get()->Print();
                 }
                 g->close();
                 delete g;
@@ -51,7 +49,6 @@ int main(int argc, char *argv[]){
 
             }
             catch (MyException &e){
-                e.Print();
                 e.Print(output);
                 output->close();
             }

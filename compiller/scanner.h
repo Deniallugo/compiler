@@ -63,7 +63,7 @@ private:
     
     ifstream f;
     Token* t;
-    char buf = 1;
+    char buf = '#';
     bool end_of_file, last_token;
     int col = 0, line = 1;
 public:
@@ -72,6 +72,8 @@ public:
     static bool isOperation( char c);
     static bool isNumber (char c);
     static bool isSymbol (char c);
+    bool ErrorIf(bool op, string message);
+    void CheckEscape(char ch, string s);
     bool isEnd();
     Token* Get();
     bool Next();

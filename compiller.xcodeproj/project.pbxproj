@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		837C8CE319DEC746003281CC /* Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 837C8CE119DEC746003281CC /* Parser.cpp */; };
 		838CA0CB19C9B7D2007A9FAE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 838CA0CA19C9B7D2007A9FAE /* main.cpp */; };
 		838CA0D319C9B7F1007A9FAE /* scanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 838CA0D119C9B7F1007A9FAE /* scanner.cpp */; };
 /* End PBXBuildFile section */
@@ -24,8 +25,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		834DF0BD19DAB305002F6EE2 /* Tester.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Tester.sh; sourceTree = "<group>"; };
-		838CA0C719C9B7D2007A9FAE /* compiller */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = compiller; sourceTree = BUILT_PRODUCTS_DIR; };
+		837C8CE119DEC746003281CC /* Parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parser.cpp; sourceTree = "<group>"; };
+		837C8CE219DEC746003281CC /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = "<group>"; };
+		8380BEFF19DE76930057B520 /* compiller.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = compiller.profdata; sourceTree = "<group>"; };
+		838CA0C719C9B7D2007A9FAE /* compiller */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = compiller; sourceTree = BUILT_PRODUCTS_DIR; };
 		838CA0CA19C9B7D2007A9FAE /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		838CA0D119C9B7F1007A9FAE /* scanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = scanner.cpp; sourceTree = "<group>"; usesTabs = 0; };
 		838CA0D219C9B7F1007A9FAE /* scanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scanner.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
@@ -43,12 +46,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8380BEFE19DE76930057B520 /* OptimizationProfiles */ = {
+			isa = PBXGroup;
+			children = (
+				8380BEFF19DE76930057B520 /* compiller.profdata */,
+			);
+			path = OptimizationProfiles;
+			sourceTree = "<group>";
+		};
 		838CA0BE19C9B7D2007A9FAE = {
 			isa = PBXGroup;
 			children = (
 				838CA0C919C9B7D2007A9FAE /* compiller */,
 				838CA0C819C9B7D2007A9FAE /* Products */,
 				83D8AD5019DA297200A69BFB /* Script.sh */,
+				8380BEFE19DE76930057B520 /* OptimizationProfiles */,
 			);
 			sourceTree = "<group>";
 		};
@@ -66,7 +78,8 @@
 				838CA0D119C9B7F1007A9FAE /* scanner.cpp */,
 				838CA0D219C9B7F1007A9FAE /* scanner.h */,
 				838CA0CA19C9B7D2007A9FAE /* main.cpp */,
-				834DF0BD19DAB305002F6EE2 /* Tester.sh */,
+				837C8CE119DEC746003281CC /* Parser.cpp */,
+				837C8CE219DEC746003281CC /* Parser.h */,
 			);
 			path = compiller;
 			sourceTree = "<group>";
@@ -128,6 +141,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				838CA0D319C9B7F1007A9FAE /* scanner.cpp in Sources */,
+				837C8CE319DEC746003281CC /* Parser.cpp in Sources */,
 				838CA0CB19C9B7D2007A9FAE /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -219,6 +233,7 @@
 		838CA0D019C9B7D2007A9FAE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_USE_OPTIMIZATION_PROFILE = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
