@@ -8,7 +8,6 @@
 //
 #include "scanner.h"
 
-
 static map< string, string> keyWords;
 static map< string, string> Operations;
 static map< string, string> Separations;
@@ -186,39 +185,6 @@ bool Scanner::isEnd(){
 
 }
 
-
-
-Token::Token(string _sType, TYPES _type, string _Value, string _Text, int _num, int _line){
-    sType = _sType;
-    Type = _type;
-    Value = _Value;
-    Text = _Text;
-    num = _num;
-    line = _line;
-};
-
-void Token::Print() const{
-    cout << sType << string(13 - sType.length(), ' ') << Value <<"\t line:"<< line << "\t col:" << num << "\t" << Text << string(Text.length(), ' ') << endl;
-}
-
-void Token::Print(ofstream *t) const{
-    *t << sType << string(13 - sType.length(), ' ') << Value <<"\t line:"<< line << "\t col:" << num << "\t" << Text << string(Text.length(), ' ') << endl;
-}
-
-void MyException::Print(ofstream *f) const{
-    if (line != -1)
-        *f <<"ERROR:"<< massage << "\t line " << line << ", column " << col << endl;
-    else
-        *f <<"ERROR:" << massage << endl;
-}
-
-void MyException::Print() const{
-    if (line != -1)
-        cout <<"ERROR:" << massage << "\t line " << line << ", column " << col << endl;
-    else
-        cout <<"ERROR:"<< massage << endl;
-}
-
 Token* Scanner::Get(){
     return t;
 }
@@ -226,6 +192,12 @@ Token* Scanner::Get(){
 Scanner::Scanner(string s){
 
     f.open(s);
+    open = s;
+
+}
+Scanner::Scanner(Scanner const &scan){
+    open = scan.open;
+    f.open(open);
 
 }
 
