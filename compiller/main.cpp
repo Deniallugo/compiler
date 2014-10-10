@@ -7,6 +7,7 @@
 //
 
 #include "scanner.h"
+#include "Parser.h"
 
 static string get_out_addr(const string& in){
     string out = in;
@@ -19,10 +20,10 @@ int main(int argc, char *argv[]){
     ofstream *output = 0;
     createKeyWords();
     createOperations();
-   /// argc = 2;
-  //  argv[1] = "-f";
-   // argv[2] = "./Test/Lexer/01.in";
- //   string ds = argv[3];
+    argc = 2;
+    argv[1] = "-pe";
+    argv[2] = "02.in";
+  //  string ds = argv[3];
     try{
         if(argc == 1)
             throw MyException("Running without parameters");
@@ -103,7 +104,27 @@ int main(int argc, char *argv[]){
                 }
             }
 
-    }
+
+    else
+        if (!(strcmp(argv[1], "-pe"))){
+            try{
+                ifstream *f = new ifstream;
+                f->open(argv[2], ios::in);
+                Scanner a(argv[2]);
+                Parser pars = *new Parser(a);
+
+
+                pars.ParseExpr()->print();
+                f->close();
+                delete f;
+            }
+            catch (MyException &e){
+                e.Print();
+            }
+        }
+
+}
+
     catch (MyException &e){
         e.Print();
         if (output){

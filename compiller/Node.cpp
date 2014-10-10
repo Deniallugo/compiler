@@ -45,6 +45,12 @@ void UnOpNode :: print(ofstream *f, int deep) const{
     *f << string(deep * 2, ' ') << opName() << endl;
     operand->print(f, deep + 1);
 }
+void ConstNode :: print(int deep) const{
+    cout << string(deep * 2, ' ') << value << endl;
+}
+void VarNode :: print(int deep) const{
+    cout << string(deep * 2, ' ') << value << endl;
+}
 /*
 bool UnOpNode :: isLvalue() const{
     Values operation = token->Value;

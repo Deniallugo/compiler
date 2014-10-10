@@ -8,27 +8,30 @@
 
 #include "Parser.h"
 
-
+bool isEq(Token t, Token t1){
+    return (t.Type == t1.Type && t.Value == t1.Value);
+}
 
 ExprNode* Parser::ParseExpr(){
 
     auto result = ParseTerm();
 
-    Token* op  = scan.Get();
+    auto op  = scan.Get();
 
-    if ( op ==  plusTkn || op == minusTkn){
+    if (isEq(*op, *plusTkn) || isEq(*op, *minusTkn)){
         scan.Next();
         result = new BinOpNode( op, result, ParseExpr() );
     }
     return result;
 }
 
+
 ExprNode* Parser::ParseTerm(){
 
     auto result = ParseFactor();
 
-    Token* op  = scan.Get();
-    if ( op == plusTkn || op == minusTkn){
+    auto op  = scan.Get();
+    if ( isEq(*op, *mulTkn) || isEq(*op, *divTkn)){
         scan.Next();
         result = new BinOpNode( op, result, ParseTerm() );
     }
@@ -38,7 +41,7 @@ ExprNode* Parser::ParseTerm(){
 bool isConst( Token t){
     return (t.Type == _FLOAT || t.Type == _INTEGER);
 }
-bool isIdent( Token t){
+bool isVar( Token t){
     return (t.Type == _IDENTIFIER);
 }
 
@@ -50,18 +53,18 @@ ExprNode* Parser::ParseFactor(){
         scan.Next();
         return new ConstNode(tok->Value);
     }
-    if ( isIdent(*tok)){
+    if ( isVar(*tok)){
             scan.Next();
             return new VarNode( tok -> Value);
     }
 
-    if( tok == lParTkn){
+    if( isEq(*tok , *lParTkn)){
 
         scan.Next();
         auto result = ParseExpr();
-        if(scan.Get() != RParTkn)
+        if(!isEq(*scan.Get() , *RParTkn))
             throw MyException("hren");
-            scan . Next();
+        scan . Next();
         return result;
     }
 

@@ -47,7 +47,7 @@ public:
     void Print(ofstream*) const;
     bool operator == (string v) {return v == Value;}
     bool operator != (string v) {return v != Value;}
-    bool operator == (Token t) ;
+    bool operator == (Token* t) ;
     bool operator != (Token t) ;
 
 };

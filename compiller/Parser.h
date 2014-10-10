@@ -15,19 +15,20 @@
 
 
 class Parser{
-    ExprNode* ParseExpr();
-    ExprNode* ParseTerm();
-    ExprNode* ParseFactor();
     Scanner &scan;
-    Token* plusTkn = new Token("Operation", _OPERATION, "+\t", "plus", 0, 0);
-    Token* minusTkn = new Token("Operation", _OPERATION, "-\t", "minus", 0, 0);
-    Token* lParTkn = new Token("Separation", _SEPARATION, "(\t", "", 0, 0);
-    Token* RParTkn = new Token("Separation", _SEPARATION, ")\t", "", 0, 0);
-
-
+    Token* plusTkn = new Token("Operation", _OPERATION, "+", "plus", 0, 0);
+    Token* mulTkn = new Token("Operation", _OPERATION, "*", "mul", 0, 0);
+    Token* divTkn = new Token("Operation", _OPERATION, "/", "div", 0, 0);
+    Token* minusTkn = new Token("Operation", _OPERATION, "-", "minus", 0, 0);
+    Token* lParTkn = new Token("Separation", _SEPARATION, "(", "", 0, 0);
+    Token* RParTkn = new Token("Separation", _SEPARATION, ")", "", 0, 0);
+public:
     Parser ( Scanner &_scan):scan(_scan){
         scan.Next();
     }
+    ExprNode* ParseExpr();
+    ExprNode* ParseTerm();
+    ExprNode* ParseFactor();
 
 
 };

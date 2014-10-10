@@ -63,8 +63,9 @@ class ConstNode : public ExprNode{
 public:
     string value;
     TYPES type;
+    void print(int deep) const;
     ConstNode (string _value) {
-        if (_value.find('.'))
+        if (!_value.find('.'))
             type = _FLOAT;
          else
             type = _INTEGER;
@@ -76,6 +77,7 @@ public:
 class VarNode : public ExprNode{
 public:
     string value;
+    void print(int deep) const;
     VarNode(string _value){
         value = _value;
     }

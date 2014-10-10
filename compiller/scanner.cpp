@@ -30,8 +30,9 @@ enum States{
 };
 
 void Scanner::CheckEscape(char ch , string s){
-    f.get(buf);
+
     if ( ch == 'e'){
+         f.get(buf);
         if ( isNumber(buf) || buf == '+' || buf == '-'){
             col += 2;
             s +=ch;
@@ -268,9 +269,9 @@ bool Scanner::Next(){
                         }
                         col++;
                     }
-                    t = new Token("Operation", _OPERATION, s + "\t", Operations[s], col, line);
+                    t = new Token("Operation", _OPERATION, s, Operations[s], col, line);
                     f.eof() ? cas = END : success = true;
-                    buf = '#';
+                    
                     break;
 
                 }
@@ -315,11 +316,13 @@ bool Scanner::Next(){
                     f.eof() ? cas = END : success = true;
                     if (ch != '.'){
 
-                        if (!ErrorIf(!isSpace(ch) && !isSeparation(ch) && !f.eof(),  "wrong number")){
+                        if (!ErrorIf(!isOperation(ch)&&!isSpace(ch) && !isSeparation(ch) && !f.eof(),  "wrong number")){
                             t = new Token("integer", _INTEGER, s, s, col, line);
                             f.eof() ? cas = END : success = true;
-                            if (isSeparation(ch))
+                            if (isSeparation(ch) || isOperation(ch))
                                 buf = ch;
+                            else
+                                buf = '#';
                             break;
                         }
 
@@ -390,7 +393,7 @@ bool Scanner::Next(){
                 }
                 s += ch;
                 f.eof() ? cas = END : success = true;
-                t = new Token("separation", _SEPARATION, s + "\t", Separations[s], col, line);
+                t = new Token("separation", _SEPARATION, s, Separations[s], col, line);
                 break;
             case STRINGT:
 
