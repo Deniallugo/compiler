@@ -16,6 +16,7 @@ using namespace std;
 
 
 
+static map< string, string> keyWords;
 
  void createKeyWords();
 

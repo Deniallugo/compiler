@@ -16,19 +16,22 @@
 
 class Parser{
     Scanner &scan;
-    Token* plusTkn = new Token("Operation", _OPERATION, "+", "plus", 0, 0);
-    Token* mulTkn = new Token("Operation", _OPERATION, "*", "mul", 0, 0);
-    Token* divTkn = new Token("Operation", _OPERATION, "/", "div", 0, 0);
-    Token* minusTkn = new Token("Operation", _OPERATION, "-", "minus", 0, 0);
-    Token* lParTkn = new Token("Separation", _SEPARATION, "(", "", 0, 0);
-    Token* RParTkn = new Token("Separation", _SEPARATION, ")", "", 0, 0);
+
+    ExprNode* ParseExpr();
+    ExprNode* ParseAssing();
+    ExprNode* ParseCond();
+    ExprNode* ParseBinaryPriority(int priority);
+    ExprNode* findPriority (Token* op, int priority);
+    ExprNode* ParseCasr();
+    ExprNode* ParseUnary();
+    ExprNode* ParsePostfix();
+    void ParseArgList();
+    ExprNode* ParsePrimary();
+    ExprNode* ParseCast();
+
 public:
     Parser ( Scanner &_scan):scan(_scan){
         scan.Next();
     }
-    ExprNode* ParseExpr();
-    ExprNode* ParseTerm();
-    ExprNode* ParseFactor();
-
 
 };

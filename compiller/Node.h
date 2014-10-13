@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include "Token.h"
 #include "scanner.h"
-
-
+#include <vector>
+using namespace std;
 
 class ExprNode{
 protected:
@@ -88,6 +88,56 @@ public:
 class CallNode: public ExprNode{
 public:
     string name;
-    ExprNode* args;
+    vector<ExprNode> args;
 
 };
+
+class ArgNode: public ExprNode{
+    ExprNode* left;
+    ExprNode* right;
+public:
+    ArgNode(ExprNode* _left , ExprNode* _right);
+    void print(int deep) const;
+};
+
+
+
+class CastNode : public ExprNode {
+    vector<Token *> type;
+    ExprNode * right;
+
+public:
+    CastNode(vector<Token *> _type, ExprNode* _right);
+    void print(int deep);
+};
+
+
+class RecordNode : public ExprNode {
+    Token * op;
+    ExprNode* left;
+    ExprNode* right;
+
+public:
+    RecordNode(ExprNode* _left, Token * _op, ExprNode* _right);
+    void print(int deep);
+};
+
+
+class ArrayNode : public ExprNode {
+    ExprNode* left;
+    ExprNode* index;
+
+public:
+    ArrayNode(ExprNode* _left, ExprNode* _right);
+    void print(int deep);
+};
+
+
+class TypeNode : public ExprNode {
+    vector<Token*> type;
+
+public:
+    TypeNode(vector<Token*> _type) ;
+    void print(int deep);
+};
+

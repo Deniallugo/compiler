@@ -8,7 +8,6 @@
 //
 #include "scanner.h"
 
-static map< string, string> keyWords;
 static map< string, string> Operations;
 static map< string, string> Separations;
 
