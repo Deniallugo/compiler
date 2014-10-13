@@ -78,9 +78,16 @@ public:
 
 class VarNode : public ExprNode{
 public:
-    string value;
+    string name;
     void print(int deep) const;
-    VarNode(string _value){
-        value = _value;
+    VarNode(string _name){
+         name = name;
     }
+};
+
+class CallNode: public ExprNode{
+public:
+    string name;
+    ExprNode* args;
+
 };

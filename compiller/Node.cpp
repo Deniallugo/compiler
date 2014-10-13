@@ -49,7 +49,7 @@ void ConstNode :: print(int deep) const{
     cout << string(deep * 2, ' ') << value << endl;
 }
 void VarNode :: print(int deep) const{
-    cout << string(deep * 2, ' ') << value << endl;
+    cout << string(deep * 2, ' ') << name << endl;
 }
 /*
 bool UnOpNode :: isLvalue() const{
