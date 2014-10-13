@@ -8,6 +8,19 @@
 
 #include "Parser.h"
 
+bool isUnary(Token t){
+    return t.Value == "++" || t.Value =="--";
+}
+
+bool isConst( Token t){
+    return (t.Type == _FLOAT || t.Type == _INTEGER);
+}
+
+bool isVar( Token t){
+    
+    return (t.Type == _IDENTIFIER);
+}
+
 bool isEq(Token t, Token t1){
     return (t.Type == t1.Type && t.Value == t1.Value);
 }
@@ -22,7 +35,12 @@ ExprNode* Parser::ParseExpr(){
         scan.Next();
         result = new BinOpNode( op, result, ParseExpr() );
     }
-    return result;
+    if ( isUnary(*op)){
+        scan.Next();
+        return new UnOpNode(op,result);
+    }
+        return result;
+
 }
 
 
@@ -35,14 +53,8 @@ ExprNode* Parser::ParseTerm(){
         scan.Next();
         result = new BinOpNode( op, result, ParseTerm() );
     }
-    return result;
-}
 
-bool isConst( Token t){
-    return (t.Type == _FLOAT || t.Type == _INTEGER);
-}
-bool isVar( Token t){
-    return (t.Type == _IDENTIFIER);
+    return result;
 }
 
 ExprNode* Parser::ParseFactor(){
@@ -63,11 +75,14 @@ ExprNode* Parser::ParseFactor(){
         scan.Next();
         auto result = ParseExpr();
         if(!isEq(*scan.Get() , *RParTkn))
-            throw MyException("hren");
+            throw MyException("ERROR: No closing bucket");
         scan . Next();
         return result;
     }
 
-        throw MyException("hren");
-}
     
+    if ( tok->Value == ";" || scan.isEnd())
+        return new VarNode("");
+
+        throw MyException("All bad");
+}

@@ -50,6 +50,7 @@ public:
     void print(ofstream *f, int deep);
 };
 
+
 class UnOpNode : public OpNode{
 protected:
     ExprNode *operand;
@@ -57,7 +58,8 @@ public:
     UnOpNode(Token *t, ExprNode *op);
     void print(int deep) const;
     void print(ofstream *f, int deep) const;
-    };
+};
+
 
 class ConstNode : public ExprNode{
 public:

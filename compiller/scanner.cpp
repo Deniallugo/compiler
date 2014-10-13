@@ -92,7 +92,6 @@ bool  Scanner::isSeparation(char c){
             c == '}' ||
             c == '(' ||
             c == ')' ||
-            c == '/' ||
             c == '[' ||
             c == ']' ||
             c == '.' ||
@@ -245,6 +244,19 @@ bool Scanner::Next(){
                     cas = CHARs;
                     break;
                 }
+                else if ( ch == '/'){
+                    f.get(buf);
+                    if ( buf == '/' || buf == '*'){
+                        cas = COMMENT;
+                        break;
+                    }
+                    if (isNumber(buf) || buf == '.' || buf == '(' || buf == '-' || isSymbol(buf) || isSpace(buf)
+                        ){
+                        cas = OPERATION;
+                        break;
+                    }
+
+                }
                 else if (isSeparation(ch)) {
                     if (ch == '.'){
                         f.get(buf);
@@ -255,25 +267,14 @@ bool Scanner::Next(){
                         }
                         break;
                     }
+
                     cas = SEPARATION;
                     break;
                 }
                 else if (isOperation(ch)){
+                    cas = OPERATION;
                     f.get(buf);
-
-                    s += ch;
-                    if (!f.eof()){
-                        if (isOperation(buf)){
-                            s += buf;
-                            f.get(ch);
-                        }
-                        col++;
-                    }
-                    t = new Token("Operation", _OPERATION, s, Operations[s], col, line);
-                    f.eof() ? cas = END : success = true;
-                    
                     break;
-
                 }
 
                 if (isSpace(ch)){
@@ -385,16 +386,33 @@ bool Scanner::Next(){
                 break;
 
             case SEPARATION:
-                f.get(buf);
+
                 col++;
                 if ((buf == '/' || buf == '*') && ch == '/'){
                     cas = COMMENT;
                     break;
                 }
                 s += ch;
-                f.eof() ? cas = END : success = true;
                 t = new Token("separation", _SEPARATION, s, Separations[s], col, line);
+                f.get(buf);
+                f.eof() ? cas = END : success = true;
+
                 break;
+            case OPERATION:
+
+                s += ch;
+                if (!f.eof()){
+                    if (isOperation(buf)){
+                        s += buf;
+                        f.get(buf);
+                    }
+                    col++;
+                }
+                t = new Token("Operation", _OPERATION, s, Operations[s], col, line);
+                f.eof() ? cas = END : success = true;
+
+                break;
+
             case STRINGT:
 
                 f.get(ch);
