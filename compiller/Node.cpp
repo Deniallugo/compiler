@@ -20,6 +20,7 @@ BinOpNode :: BinOpNode(Token *t, ExprNode *l, ExprNode *r) : OpNode(t), left(l),
         throw MyException("Lost operand", t->line, t->num);
 }
 
+
 void BinOpNode :: print(int deep) const{
     left->print(deep + 1);
     cout << string(deep * 2, ' ') << opName() << endl;
@@ -27,7 +28,7 @@ void BinOpNode :: print(int deep) const{
 }
 
 
-void BinOpNode :: print(ofstream *f, int deep){
+void BinOpNode :: print(ofstream* f, int deep){
     left->print(f, deep + 1);
     *f << string(deep * 2, ' ') << opName() << endl;
     right->print(deep + 1);
@@ -48,14 +49,12 @@ void UnOpNode :: print(ofstream *f, int deep) const{
 void ConstNode :: print(int deep) const{
     cout << string(deep * 2, ' ') << value << endl;
 }
+void ConstNode :: print(ofstream* f, int deep) const{
+    *f << string(deep * 2, ' ') << value << endl;
+}
 void VarNode :: print(int deep) const{
     cout << string(deep * 2, ' ') << name << endl;
 }
-/*
-bool UnOpNode :: isLvalue() const{
-    Values operation = token->Value;
-    return operation == factor || (operation == incr || operation == decr) && operand->isLvalue();
+void VarNode :: print(ofstream* f, int deep) const{
+    *f << string(deep * 2, ' ') << name << endl;
 }
-
-
-*/

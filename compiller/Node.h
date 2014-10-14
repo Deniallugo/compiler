@@ -22,10 +22,9 @@ public:
     friend class BinaryOpNode;
     ExprNode(){}
     ExprNode(Token* t);
-    virtual void print(int deep = 0) const {};
+    virtual void print(int deep = 0) const {}
     virtual void print(ofstream *t, int deep = 0) const {}
-    virtual bool isLvalue() const { return false; }
-    virtual bool isModifiableLvalue() const { return false; }
+ 
 };
 
 
@@ -35,7 +34,7 @@ protected:
 public:
     OpNode(Token *op);
     virtual void print(int deep) const {}
-    virtual void print(int deep, ofstream* f) const {}
+    virtual void print( ofstream* f, int deep = 0) const {}
 };
 
 class BinOpNode : public OpNode{
@@ -46,8 +45,8 @@ protected:
 public:
     friend class Parser;
     BinOpNode(Token *op, ExprNode *l, ExprNode *r);
-    void print(int deep) const;
-    void print(ofstream *f, int deep);
+    virtual void print(int deep) const;
+    virtual void print(ofstream* f, int deep = 0);
 };
 
 
@@ -56,8 +55,8 @@ protected:
     ExprNode *operand;
 public:
     UnOpNode(Token *t, ExprNode *op);
-    void print(int deep) const;
-    void print(ofstream *f, int deep) const;
+    virtual void print(int deep) const;
+    virtual void print(ofstream *f, int deep) const;
 };
 
 
@@ -65,7 +64,8 @@ class ConstNode : public ExprNode{
 public:
     string value;
     TYPES type;
-    void print(int deep) const;
+    virtual void print(int deep) const;
+    virtual void print(ofstream *f, int deep = 0) const;
     ConstNode (string _value) {
         if (!_value.find('.'))
             type = _FLOAT;
@@ -79,9 +79,10 @@ public:
 class VarNode : public ExprNode{
 public:
     string name;
-    void print(int deep) const;
+    virtual void print(int deep = 0 ) const;
+    virtual void print(ofstream *f, int deep = 0 ) const;
     VarNode(string _name){
-         name = name;
+         name = _name;
     }
 };
 

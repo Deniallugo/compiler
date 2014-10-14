@@ -20,9 +20,9 @@ int main(int argc, char *argv[]){
     ofstream *output = 0;
     createKeyWords();
     createOperations();
-    argc = 2;
-    argv[1] = "-pe";
-    argv[2] = "08.in";
+  //  argc = 2;
+ //   argv[1] = "-pe";
+ //   argv[2] = "09.in";
     try{
         if(argc == 1)
             throw MyException("Running without parameters");
@@ -111,9 +111,11 @@ int main(int argc, char *argv[]){
                 f->open(argv[2], ios::in);
                 Scanner a(argv[2]);
                 Parser pars = *new Parser(a);
-
-
+                ofstream *g = new ofstream;
+                output = g;
+                g->open(get_out_addr(argv[2]), ios::out);
                 pars.ParseExpr()->print();
+                //pars.ParseExpr()->print(g);
                 f->close();
                 delete f;
             }

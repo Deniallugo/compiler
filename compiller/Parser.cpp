@@ -8,9 +8,6 @@
 
 #include "Parser.h"
 
-bool isUnary(Token t){
-    return t.Value == "++" || t.Value =="--";
-}
 
 bool isConst( Token t){
     return (t.Type == _FLOAT || t.Type == _INTEGER);
@@ -76,13 +73,10 @@ ExprNode* Parser::ParseFactor(){
         auto result = ParseExpr();
         if(!isEq(*scan.Get() , *RParTkn))
             throw MyException("ERROR: No closing bucket");
-        scan . Next();
+        scan.Next();
         return result;
     }
 
-    
-    if ( tok->Value == ";" || scan.isEnd())
-        return new VarNode("");
+        throw MyException("no right operand");
 
-        throw MyException("All bad");
 }
