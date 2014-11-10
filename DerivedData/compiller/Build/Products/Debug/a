@@ -1,0 +1,21 @@
+
+    static bool isUnary(Token* op){
+    return (isEq(op, _OPERATION, "+")||
+            isEq(op, _OPERATION, "-")||
+            isEq(op, _OPERATION, "&")||
+            isEq(op, _OPERATION, "*")||
+            isEq(op, _OPERATION, "!")||
+            isEq(op, _OPERATION, "~")
+            );
+}
+	auto op = scan.Get();    
+if  (isEq( op, _OPERATION, "++") || isEq(op, _OPERATION, "--")){
+        scan.Next();
+        return new UnOpNode(op,ParseUnary());
+
+
+    }
+    if (isUnary(op)){
+        scan.Next();
+        return new UnOpNode(op,ParseUnary());
+    }

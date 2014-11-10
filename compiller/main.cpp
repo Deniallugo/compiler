@@ -113,7 +113,7 @@ int main(int argc, char *argv[]){
                 Parser pars = *new Parser(a);
 
 
-                pars.ParseExpr()->print();
+                pars.ParseProgram();
                 f->close();
                 delete f;
             }

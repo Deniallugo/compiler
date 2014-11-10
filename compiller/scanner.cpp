@@ -80,6 +80,7 @@ bool Scanner::isOperation(char c){
     c == '&' ||
     c == '%' ||
     c == '|' ||
+    c == '.' ||
     c == '^' ||
     c == '?' ||
     c == '!';
@@ -93,7 +94,6 @@ bool  Scanner::isSeparation(char c){
             c == ')' ||
             c == '[' ||
             c == ']' ||
-            c == '.' ||
             c == ',' ||
             c == ';'
             );
@@ -113,7 +113,10 @@ bool Scanner::isSpace(char c){
     return false;
 }
 
-
+Token* Scanner::GetNext(){
+    Next();
+    return Get();
+}
 Scanner::~Scanner(void){
     delete t;
 }

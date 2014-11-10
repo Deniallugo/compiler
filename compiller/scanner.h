@@ -42,6 +42,7 @@ public:
     void CheckEscape(char ch, string s);
     bool isEnd();
     Token* Get();
+    Token* GetNext();
     bool Next();
     Scanner(string s);
     Scanner(Scanner const &scan);

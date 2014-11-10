@@ -28,8 +28,10 @@ enum TYPES {
     _COMMENT,
     _IDENTIFIER,
     _KEYWORD,
-    _END_OF_FILE
-
+    _END_OF_FILE,
+    _VOID,
+    _ERROR,
+    _STRUCT
 
 };
 
