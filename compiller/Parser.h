@@ -13,7 +13,6 @@
 #include "Node.h"
 #include "Symbol.h"
 
-
 class Parser{
     Scanner &scan;
     int struct_counter;
@@ -22,12 +21,13 @@ class Parser{
     map <string, bool> unary;
     ExprNode * m_top;
     Symbol * m_symbolBuffer;
+    FuncSymbol *parsingFunc;
 
     //SymTableStack tablesStack;
     Block global_field;
    // FuncSymbol *parsingFunc;
     std::map<string, bool> assignmentOper, unaryOper;
-    SymTableStack * m_symStack;
+    SymTableStack *symStack;
     bool m_semOff, m_onlyConstExpr, m_onlyListInit, m_constDecl;
     //Symbol * m_symbolBuffer;
 
@@ -76,32 +76,40 @@ public:
     void ParseDeclaration();
     ExprNode* ParseAssing();
     ExprNode* ParseCond();
-    //VarSymbol* ParseDirectDeclaration();
-    //VarSymbol* ParseComplexDeclaration(SymbolType* start_type);
-   /// VarSymbol* ParseIdentifier(SymbolType* start_type);
-   // ExprNode* ParseBinaryPriority(int priority);
+    VarSymbol* ParseDirectDeclaration();
+    VarSymbol* ParseComplexDeclaration(SymbolType* start_type);
+    ExprNode* ParseBinaryPriority(int priority);
     bool findPriority (Token* op, int priority);
     ExprNode* ParseCasr();
-   // SymbolType* ParseType();
+    SymbolType* ParseType(bool param = false);
     Block *ParseBlock();
+    void print_declaration(int deep)const;
+    void print()const;
+    ExprNode* ParseMember(ExprNode* left);
     ExprNode* ParseUnary();
     ExprNode* ParsePostfix();
     void ParseArgList();
     ExprNode* ParsePrimary();
     ExprNode* ParseCast();
- //   void SymCreate(SymTable *table, const string& name, S_types tp = t_Int );
+    ExprNode* ParseFactor();
+  //  void ParseDeclaration();
+    ArrNode* ParseArrIndex(ExprNode *root);
+    FunctionalNode* ParseFuncCall(ExprNode *r);
+    void SymCreate(SymTable *table, const string& name, S_types tp = t_Int );
     void ParseParam();
-  /*  SymbolType *ParseType(bool param = false);
+  //  SymbolType *ParseType(bool param = false);
     VarSymbol *ParseIdentifier(SymbolType *type, bool param = false);
     SymbolType *ParseArrayDimension(SymbolType *type, bool param = false);
     FuncSymbol* createFunction(const string &name, SymbolType *type);
     StructSymbol *ParseStruct(bool param = false);
-    // ForStatement* ParseFor();*/
-
-public:
-    ExprNode* ParseExpr();
-    Parser ( Scanner &_scan):scan(_scan){
-        scan.Next();
-    }
+    ForStatement* ParseFor();
+    ExprNode *ParseStatement();
+    IfStatement* ParseIf();
+    WhileStatement* ParseWhile();
+    DoWhileStatement* ParseDoWhile();
+    Statement* ParseJumpStatement();
+    void CheckReturn(FuncSymbol* func);
+    ExprNode* ParseExpr(int priority = 0 );
+    Parser ( Scanner &_scan);
 
 };

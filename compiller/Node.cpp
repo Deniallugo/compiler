@@ -1,6 +1,8 @@
 #include "Node.h"
 #include <fstream>
 //#include "Symbol.h"
+
+
 ScalarSymbol *IntType = new ScalarSymbol("int", _INTEGER);
 ScalarSymbol *FloatType = new ScalarSymbol("float", _FLOAT);
 ScalarSymbol * CharType = new ScalarSymbol("char", _CHAR);
@@ -15,7 +17,6 @@ map<string, SymbolType*> operationReturningType;
 
 
 
-ExprNode :: ExprNode(Token *t) :Node(t->Type), token(t) {}
 
 OpNode :: OpNode(Token *op) : ExprNode(op) {}
 
@@ -379,8 +380,8 @@ void FunctionalNode :: printArgs(int deep) const{
     }
 }
 
-TypeNode::TypeNode(string name, Symbol * type):DeclNode(type->getType()->type
-), m_name(name), m_type(type){}
+//TypeNode::TypeNode(string name, Symbol * type):DeclNode(type->getType()->type
+//), m_name(name), m_type(type){}
 
 SymbolType* FunctionalNode :: getType(){
     FuncSymbol *sym = dynamic_cast<FuncSymbol*>(symbol);
@@ -469,64 +470,246 @@ void print_node(int deep, ExprNode *n){
 
 
 
-DeclNode::DeclNode(TYPES type) {}
+//DeclNode::DeclNode(TYPES type) {}
+//
+//
+//void StructNode :: print(int deep) const{
+//    cout << string(deep * 2, ' ') <<m_type->name <<" " << m_name << endl;
+//
+//}
+//
+//void StructNode :: print(ofstream *f,int deep) const{
+//    *f << string(deep * 2, ' ') <<m_type->name <<" " << m_name << endl;
+//
+//}
+//
+//SymbolType* StructNode::getType(){
+//    return dynamic_cast<SymbolType*> (m_type);
+//}
+//
+//
+//void PointerNode ::print(int deep)const{
+//    cout << string(deep * 2, ' ') ;
+//    m_decl->print(deep);
+//}
+//
+//void PointerNode ::print(ofstream* f ,int deep)const{
+//    *f << string(deep * 2, ' ') ;
+//    m_decl->print(f,deep);
+//}
+//
+//bool DeclNode::isLvalue()const{
+//    return false;
+//}
+//bool DeclNode::isModifiableLvalue() const{
+//    return false;
+//}
+//
+//void InitListNode::print(int deep) const{
+//    for(int i = 0 ; i < m_inits.size(); i++){
+//        m_inits[i]->print(deep + i);
+//    }
+//
+//}
+//
+//void InitListNode::print(ofstream* f, int deep) const{
+//    for(int i = 0 ; i < m_inits.size(); i++){
+//        m_inits[i]->print(f,deep);
+//    }
+//
+//}
+//
+//
+//
+//void DeclStmtNode::print(int deep)const{
+//    m_type->print(deep);
+//    m_decl->print(deep);
+//
+//}
+//void DeclStmtNode::print(ofstream* f,int deep)const{
+//    m_type->print(f,deep);
+//    m_decl->print(f,deep);
+//
+//}
+//void DeclListNode::print(int deep)const{
+//    m_left->print(deep);
+//    m_right->print(deep);
+//}
+//
+//void DeclListNode::print(ofstream* f,int deep)const{
+//    m_left->print(f,deep);
+//    m_right->print(f,deep);
+//
+//}
+//void ArrayDeclNode::print(int deep)const{
+//    m_name->print(deep);
+//    cout << "[";
+//    m_length->print(deep);
+//    cout << "]";
+//}
+//void ArrayDeclNode::print(ofstream *f, int deep)const{
+//    m_name->print(f,deep);
+//    *f << "[";
+//    m_length->print(f,deep);
+//    *f << "]";
+//}
+//
+//void ConstTypeNode::print(int deep) const{
+//    m_decl->print(deep);
+//}
+//void ConstTypeNode::print(ofstream* f,int deep) const{
+//    m_decl->print(f,deep);
+//}
+//
+//InitListNode::InitListNode(std::vector<ExprNode *> inits) : DeclNode(_VOID), m_inits(inits) {}
+//
+//
+//
+//
+//
+//DeclListNode::DeclListNode(ExprNode * left, ExprNode * right) : DeclNode(_VOID), m_left(left), m_right(right) {}
+//
+//
+//
+//
+//DeclStmtNode::DeclStmtNode(ExprNode * type, ExprNode * decl) : DeclNode(_VOID), m_type(type), m_decl(decl) {}
+//
+//
+//
+//ArrayDeclNode::ArrayDeclNode(ExprNode * name, ExprNode * length) : DeclNode(_VOID), m_name(name), m_length(length) {}
+//
 
-
-void StructNode :: print(int deep) const{
-    cout << string(deep * 2, ' ') <<m_type->name <<" " << m_name << endl;
-
+void IfStatement :: print(int deep) const{
+    string tab(deep * 2, ' ');
+    cout << tab << "if" << endl << endl;
+    condition->print(deep + 1);
+    cout << endl << tab << "then" << endl << endl;
+    if_branch->print(deep + 1);
+    if(else_branch){
+        cout << tab << "else" << endl << endl;
+        else_branch->print(deep + 1);
+    }
 }
 
-void StructNode :: print(ofstream *f,int deep) const{
-    *f << string(deep * 2, ' ') <<m_type->name <<" " << m_name << endl;
 
+void ForStatement :: print(int deep) const{
+    string tab(deep * 2, ' ');
+    cout << tab << "for (;;) .." << endl;
+    cout << tab << "First action:" << endl;
+    if(first_cond)
+        first_cond->print(deep + 1);
+    else
+        cout << tab <<"none" << endl;
+    cout << tab << "Stop condition:" << endl;
+    if(second_cond)
+        second_cond->print(deep + 1);
+    else
+        cout << tab << "none" << endl;
+    cout << tab << "Step:" << endl;
+    if(third_cond)
+        third_cond->print(deep + 1);
+    else
+        cout << tab << "none" << endl;
+    cout << tab << "Body:" << endl;
+    if(body)
+        body->print(deep + 1);
+    else
+        cout << tab << "Block is empty" << endl;
 }
 
-SymbolType* StructNode::getType(){
-    return dynamic_cast<SymbolType*> (m_type);
+static void print_cycle(int deep, ExprNode *condition, ExprNode *body){
+    string tab(deep * 2, ' ');
+    cout << tab << "Condition:" << endl;
+    condition->print(deep + 1);
+    cout << tab << "Body:" << endl;
+    if(body)
+        body->print(deep + 1);
+    else
+        cout << tab << "<< block is empty >>" << endl;
+}
+
+void WhileStatement :: print(int deep) const{
+    cout << string(deep * 2, ' ') << "while () .." << endl;
+    print_cycle(deep, condition, body);
+}
+
+void DoWhileStatement :: print(int deep) const{
+    cout << string(deep * 2, ' ') << "do .. while()" << endl;
+    print_cycle(deep, condition, body);
+}
+
+void ContinueStatement :: print(int deep) const{
+    cout << string(deep * 2, ' ') << "continue" << endl;
+}
+
+void BreakStatement :: print(int deep) const{
+    cout << string(deep * 2, ' ') << "break" << endl;
 }
 
 
-void PointerNode ::print(int deep)const{
-    cout << string(deep * 2, ' ') ;
-    m_decl->print(deep);
-}
-
-void PointerNode ::print(ofstream* f ,int deep)const{
-    *f << string(deep * 2, ' ') ;
-    m_decl->print(f,deep);
-}
-
-SymbolType* PointerNode::getType(){
-    return m_decl->getType();
-}
-
-bool DeclNode::isLvalue()const{
-    return false;
-}
-bool DeclNode::isModifiableLvalue() const{
-    return false;
+void ReturnStatement :: print(int deep) const{
+    cout << string(deep * 2, ' ') << "return" << endl;
+    if(value)
+        value->print(deep + 1);
 }
 
 
-InitListNode::InitListNode(std::vector<ExprNode *> inits) : DeclNode(_VOID), m_inits(inits) {}
+IntNode :: IntNode(Token *t) : ExprNode(t) {}
+
+void IntNode :: print(int deep) const{
+    cout << string(deep * 2, ' ') << token->Value << endl;
+}
+
+void IntNode :: print(ofstream *f, int deep) const{
+    *f << string(deep * 2, ' ') << token->Value << endl;
+}
+
+SymbolType *IntNode :: getType(){
+    return IntType;
+}
+
+FloatNode :: FloatNode(Token *t) : ExprNode(t) {}
+
+void FloatNode :: print(int deep) const{
+    cout << string(deep * 2, ' ') << token->Value << endl;
+}
+
+void FloatNode :: print(ofstream *f, int deep) const{
+    *f << string(deep * 2, ' ') << token->Value << endl;
+}
+
+SymbolType *FloatNode :: getType(){
+    return FloatType;
+}
 
 
+CharNode :: CharNode(Token *t) : ExprNode(t) {}
 
+SymbolType *CharNode :: getType(){
+    return CharType;
+}
 
+void CharNode :: print(int deep) const{
+    cout << string(deep * 2, ' ') << '\'' << token->Value << '\'' << endl;
+}
 
-DeclListNode::DeclListNode(ExprNode * left, ExprNode * right) : DeclNode(_VOID), m_left(left), m_right(right) {}
+void CharNode :: print(ofstream *f, int deep) const{
+    *f << string(deep * 2, ' ') << '\'' << token->Value << '\'' << endl;
+}
 
+StringNode :: StringNode(Token *t) : ExprNode(t) {}
 
+SymbolType* StringNode :: getType(){
+    return StringType;
+}
 
+void StringNode :: print(int deep) const{
+    cout << string(deep * 2, ' ') << '"' << token->Value << '"' << endl;
+}
 
-DeclStmtNode::DeclStmtNode(ExprNode * type, ExprNode * decl) : DeclNode(_VOID), m_type(type), m_decl(decl) {}
-
-
-
-ArrayDeclNode::ArrayDeclNode(ExprNode * name, ExprNode * length) : DeclNode(_VOID), m_name(name), m_length(length) {}
-
-
+void StringNode :: print(ofstream *f, int deep) const{
+    *f << string(deep * 2, ' ') << '"' << token->Value << '"' << endl;
+}
 
 
 

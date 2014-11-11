@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		8367554E1A0492E600904BB1 /* Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8367554C1A0492E600904BB1 /* Parser.cpp */; };
+		837E16011A1187F30037FADF /* Parser2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 837E16001A1187F30037FADF /* Parser2.cpp */; };
 		83842D8F19FD068B0074C105 /* Symbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83842D8E19FD068B0074C105 /* Symbol.cpp */; };
 		838CA0CB19C9B7D2007A9FAE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 838CA0CA19C9B7D2007A9FAE /* main.cpp */; };
 		838CA0D319C9B7F1007A9FAE /* scanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 838CA0D119C9B7F1007A9FAE /* scanner.cpp */; };
@@ -31,6 +32,7 @@
 /* Begin PBXFileReference section */
 		8367554C1A0492E600904BB1 /* Parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parser.cpp; sourceTree = "<group>"; };
 		837C8CE219DEC746003281CC /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = "<group>"; };
+		837E16001A1187F30037FADF /* Parser2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parser2.cpp; sourceTree = "<group>"; };
 		8380BEFF19DE76930057B520 /* compiller.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = compiller.profdata; sourceTree = "<group>"; };
 		83842D8D19FD053C0074C105 /* Symbol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Symbol.h; sourceTree = "<group>"; };
 		83842D8E19FD068B0074C105 /* Symbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Symbol.cpp; sourceTree = "<group>"; };
@@ -100,6 +102,7 @@
 				83E9BBFE19E6A2E6004E9FD4 /* Token.h */,
 				83E9BC0019E6A372004E9FD4 /* MyException.cpp */,
 				83E9BC0119E6A372004E9FD4 /* MyException.h */,
+				837E16001A1187F30037FADF /* Parser2.cpp */,
 			);
 			path = compiller;
 			sourceTree = "<group>";
@@ -163,6 +166,7 @@
 				838CA0D319C9B7F1007A9FAE /* scanner.cpp in Sources */,
 				83E9BC0219E6A372004E9FD4 /* MyException.cpp in Sources */,
 				8367554E1A0492E600904BB1 /* Parser.cpp in Sources */,
+				837E16011A1187F30037FADF /* Parser2.cpp in Sources */,
 				83E9BC0519E7554A004E9FD4 /* Node.cpp in Sources */,
 				83842D8F19FD068B0074C105 /* Symbol.cpp in Sources */,
 				838CA0CB19C9B7D2007A9FAE /* main.cpp in Sources */,

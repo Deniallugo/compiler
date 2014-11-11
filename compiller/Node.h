@@ -54,28 +54,19 @@ static bool isUnary(Token* op){
             );
 }
 
-class Node{
-    TYPES type;
-public:
-    Node(){
-        type = _VOID;
-    }
-    Node(TYPES _type): type(_type){}
-};
-
-class ExprNode : public Node{
+class ExprNode {
 protected:
     Token *token;
 public:
     friend class Parser;
     friend class BinaryOpNode;
     friend class MyException;
-    ExprNode():Node(_VOID){}
-    ExprNode(Token* t);
+    ExprNode(){token = nullptr;}
+    ExprNode(Token* t):token(t){}
     ExprNode* init_var(SymbolType *);
     virtual void print(int deep = 0) const {};
     virtual void print(ofstream *t, int deep = 0) const {}
-    virtual SymbolType* getType() { return 0; }
+    SymbolType* getType() { return 0; }
     virtual bool isLvalue() const { return false; }
     virtual bool isModifiableLvalue() const { return false; }
     static ExprNode* makeTypeCoerce(ExprNode* expr, SymbolType *from, SymbolType *to);
@@ -192,7 +183,7 @@ class StmtListNode : public ExprNode {
 
 public:
     StmtListNode(ExprNode * _left, ExprNode *_right) : m_left(_left), m_right(_right){}
-    virtual void print(int, int, bool);
+    void print(int deep) const;
 };
 
 
@@ -217,7 +208,7 @@ private:
 public:
     CastNode(Token *op, ExprNode *oper, vector<SymbolType*> *ts);
     CastNode(Token* op, ExprNode* oper, string ts);
-    virtual SymbolType *getType();
+     SymbolType *getType();
     void print(int deep) const;
     void print(ofstream *f, int deep) const;
 };
@@ -236,9 +227,8 @@ public:
     RecordNode(ExprNode *left, Token *op, ExprNode *right) : ExprNode(op), m_left(left), m_right(right){}
     void print(int deep) const;
     void print(ofstream *f, int deep) const;
-    SymbolType* getType();
-    bool isLvalue() const ;
-    bool isModifiableLvalue() const ;
+    bool isLvalue() const {return false;}
+    bool isModifiableLvalue() const { return false;}
 };
 
 class TernaryOpNode : public BinOpNode{
@@ -287,7 +277,7 @@ public:
 class ArrNode : public FunctionalNode{
     ExprNode *arg;
 public:
-    ArrNode(ExprNode* arr, ExprNode* arg);
+    ArrNode(ExprNode* arr, ExprNode* arg = nullptr);
     void print(int deep) const;
     void print(ofstream *f, int deep) const;
     bool isLvalue() const;
@@ -312,130 +302,219 @@ public:
 };
 
 
+//
+//class DeclNode : public ExprNode {
+//
+//public:
+//    DeclNode(TYPES type);
+//    void print(int deep) const;
+//    void print(ofstream *f, int deep) const;
+//    SymbolType* getType();
+//    bool isLvalue() const ;
+//    bool isModifiableLvalue() const ;
+//
+//
+//};
+//
+//
+//class InitListNode : public DeclNode {
+//    std::vector<ExprNode *> m_inits;
+//
+//public:
+//    InitListNode(std::vector<ExprNode *>);
+//    void print(int deep) const;
+//    void print(ofstream *f, int deep) const;
+//};
+//
+//
+//class DeclStmtNode : public DeclNode {
+//    ExprNode * m_type;
+//    ExprNode * m_decl;
+//
+//public:
+//    DeclStmtNode(ExprNode *, ExprNode *);
+//    void print(int deep) const;
+//    void print(ofstream *f, int deep) const;
+//    SymbolType* getType();
+//
+//};
+//
+//class DeclListNode : public DeclNode {
+//    ExprNode * m_left, * m_right;
+//
+//public:
+//    DeclListNode(ExprNode *, ExprNode *);
+//    void print(int deep) const;
+//    void print(ofstream *f, int deep) const;
+//    SymbolType* getType();
+//};
+//
+//class ArrayDeclNode : public DeclNode {
+//    ExprNode * m_name;
+//    ExprNode * m_length;
+//
+//public:
+//    ArrayDeclNode(ExprNode *, ExprNode *);
+//    void print(int deep) const;
+//    void print(ofstream *f, int deep) const;
+//    SymbolType* getType();
+//
+//};
+//
+//
+//class StructNode : public DeclNode {
+//    string m_name;
+//    ExprNode * m_decl;
+//    Symbol * m_type;
+//
+//public:
+//    StructNode(string st, ExprNode * ex , Symbol * sb = NULL): DeclNode(sb->getType()->type), m_name(st), m_decl(ex), m_type(sb){}
+//    string getName();
+//    void print(int deep) const;
+//    void print(ofstream *f, int deep) const;
+//    SymbolType* getType() ;
+//
+//};
+//
+//
+//class ConstTypeNode : public DeclNode {
+//    ExprNode * m_decl;
+//
+//public:
+//    ConstTypeNode(ExprNode* de): DeclNode(de->getType()->type),m_decl(de){}
+//    void print(int deep) const;
+//    void print(ofstream *f, int deep) const;
+//  };
+//
+//
+//class PointerNode : public DeclNode {
+//    ExprNode * m_decl;
+//
+//public:
+//    PointerNode(ExprNode * de):DeclNode(de->getType()->type),m_decl(de){}
+//    void print(int deep) const;
+//    void print(ofstream *f, int deep) const;
+// };
+//
+//
+//class TypeNode : public DeclNode {
+//    string m_name;
+//    Symbol * m_type;
+//    
+//public:
+//    TypeNode(string name, Symbol * type= NULL);
+//    void print(int deep) const;
+//    void print(ofstream *f, int deep) const;
+//    string getName();
+//
+//};
+//
+//class InitDeclNode: public ExprNode{
+//    ExprNode* point;
+//    ExprNode* init;
+//public:
+//    InitDeclNode(ExprNode* _point, ExprNode* _init){
+//        point = _point;
+//        init  = _init;
+//    }
+//    void print(int deep) const;
+//    void print(ofstream *f, int deep) const;
+//
+//
+//};
 
-class DeclNode : public ExprNode {
 
+
+class IntNode : public ExprNode{
 public:
-    DeclNode(TYPES type);
+    IntNode(Token *t);
     void print(int deep) const;
     void print(ofstream *f, int deep) const;
     SymbolType* getType();
-    bool isLvalue() const ;
-    bool isModifiableLvalue() const ;
-
-
 };
 
 
-class InitListNode : public DeclNode {
-    std::vector<ExprNode *> m_inits;
-
+class FloatNode : public ExprNode{
 public:
-    InitListNode(std::vector<ExprNode *>);
-};
-
-
-class DeclStmtNode : public DeclNode {
-    ExprNode * m_type;
-    ExprNode * m_decl;
-
-public:
-    DeclStmtNode(ExprNode *, ExprNode *);
+    FloatNode(Token *t);
     void print(int deep) const;
-    void print(ofstream *f, int deep) const;
-    SymbolType* getType();
-
-};
-
-class DeclListNode : public DeclNode {
-    ExprNode * m_left, * m_right;
-
-public:
-    DeclListNode(ExprNode *, ExprNode *);
-    void print(int deep) const;
-    void print(ofstream *f, int deep) const;
+    void print(ofstream* f, int deep) const;
     SymbolType* getType();
 };
 
-class ArrayDeclNode : public DeclNode {
-    ExprNode * m_name;
-    ExprNode * m_length;
 
+class CharNode : public ExprNode{
 public:
-    ArrayDeclNode(ExprNode *, ExprNode *);
+    CharNode(Token *t);
     void print(int deep) const;
-    void print(ofstream *f, int deep) const;
     SymbolType* getType();
+    void print(ofstream* f, int deep) const;
+};
 
+class StringNode : public ExprNode{
+public:
+    StringNode(Token *t);
+    void print(int deep) const;
+    SymbolType *getType();
+    void print(ofstream* f, int deep) const;
+};
+
+class ForStatement : public Statement{
+private:
+    ExprNode *first_cond;
+    ExprNode *second_cond;
+    ExprNode *third_cond;
+    ExprNode *body;
+public:
+    ForStatement(ExprNode *first, ExprNode *second, ExprNode *third, ExprNode *block) : first_cond(first), second_cond(second), third_cond(third), body(block) {}
+    void print(int deep = 0) const;
 };
 
 
-class StructNode : public DeclNode {
-    string m_name;
-    ExprNode * m_decl;
-    Symbol * m_type;
-
+class IfStatement : public Statement{
+private:
+    ExprNode *condition;
+    ExprNode *if_branch;
+    ExprNode *else_branch;
 public:
-    StructNode(string st, ExprNode * ex , Symbol * sb = NULL): DeclNode(sb->getType()->type), m_name(st), m_decl(ex), m_type(sb){}
-    string getName();
-    void print(int deep) const;
-    void print(ofstream *f, int deep) const;
-    SymbolType* getType() ;
+    IfStatement(ExprNode *cond, ExprNode *$if, ExprNode *$else = 0) : condition(cond), if_branch($if), else_branch($else) {}
+    void print(int deep = 0) const;
+};
+
+class WhileStatement : public Statement{
+private:
+    ExprNode *condition;
+    ExprNode *body;
+public:
+    WhileStatement(ExprNode *c, ExprNode *b) : condition(c), body(b) {}
+    void print(int deep = 0) const;
 
 };
 
-
-class ConstTypeNode : public DeclNode {
-    ExprNode * m_decl;
-
+class DoWhileStatement : public Statement{
+private:
+    ExprNode *condition;
+    ExprNode *body;
 public:
-    ConstTypeNode(ExprNode* de): DeclNode(de->getType()->type),m_decl(de){}
-    void print(int deep) const;
-    void print(ofstream *f, int deep) const;
-    SymbolType* getType();
-    bool isLvalue() const ;
-    bool isModifiableLvalue() const ;
+    DoWhileStatement(ExprNode *c, ExprNode *b) : condition(c), body(b) {}
+    void print(int deep = 0) const;
 };
 
-
-class PointerNode : public DeclNode {
-    ExprNode * m_decl;
-
-public:
-    PointerNode(ExprNode * de):DeclNode(de->getType()->type),m_decl(de){}
-    void print(int deep) const;
-    void print(ofstream *f, int deep) const;
-    SymbolType* getType();
-    bool isLvalue() const ;
-    bool isModifiableLvalue() const ;
+class ContinueStatement : public Statement {
+    void print(int deep = 0) const;
 };
 
-
-class TypeNode : public DeclNode {
-    string m_name;
-    Symbol * m_type;
-    
-public:
-    TypeNode(string name, Symbol * type= NULL);
-    void print(int deep) const;
-    void print(ofstream *f, int deep) const;
-    string getName();
-    SymbolType * getType();
+class BreakStatement : public Statement {
+    void print(int deep = 0) const;
 };
 
-class InitDeclNode: public ExprNode{
-    ExprNode* point;
-    ExprNode* init;
+class ReturnStatement : public Statement {
+private:
+    ExprNode *value;
+    friend class Parser;
 public:
-    InitDeclNode(ExprNode* _point, ExprNode* _init){
-        point = _point;
-        init  = _init;
-    }
-    void print(int deep) const;
-    void print(ofstream *f, int deep) const;
-    SymbolType* getType();
-
-
+    ReturnStatement(ExprNode *v) : value(v) {}
+    void print(int deep = 0) const;
 };
 
 

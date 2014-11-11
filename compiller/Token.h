@@ -31,7 +31,8 @@ enum TYPES {
     _END_OF_FILE,
     _VOID,
     _ERROR,
-    _STRUCT
+    _STRUCT,
+    _CONST
 
 };
 

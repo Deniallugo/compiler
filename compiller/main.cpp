@@ -27,9 +27,9 @@ int main(int argc, char *argv[]){
         if(argc == 1)
             throw MyException("Running without parameters");
         if (!(strcmp(argv[1], "-help"))){
-            cout <<"-help" << "-f - write to the file + output to the screen (lexer)" << endl <<
+            cout <<"-help" << "-f - write to the file + output to the screen (scan)" << endl <<
             "-s - output to the screen (lexel)" << endl <<
-            "-t - write to the file (lexer)" << endl;
+            "-t - write to the file (scan)" << endl;
 
         }
         if (!(strcmp(argv[1], "-t"))) {

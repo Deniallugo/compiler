@@ -116,11 +116,11 @@ public:
 
 
 class StructSymbol : public SymbolType{
-    SymTable* m_fields;
 public:
-    StructSymbol(string name) : SymbolType( name, _STRUCT){
-        m_fields = new SymTable();
-    }
+    SymTable* m_fields;
+
+    StructSymbol(SymTable *st, string name) : SymbolType(name, _STRUCT), m_fields(st) {}
+
     void print(int deep) const;
     string typeName() const;
     virtual bool isStruct() { return true; }
