@@ -116,7 +116,7 @@ int main(int argc, char *argv[]){
 
 
                 pars.ParseProgram();
-                pars.print();
+                pars.print_declaration(0);
                 f->close();
                 delete f;
             }
