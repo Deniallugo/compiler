@@ -106,25 +106,26 @@ SymbolType *BinOpNode :: getType(){
     if(isEqual(token))
             if(!leftType->canConvertTo(IntType) || !rightType->canConvertTo(IntType))
                 throw MyException("Expression must have integral type", token);
-    else if(isAssing(token)){
+
+    if(isAssing(token)){
             if(!left->isModifiableLvalue())
                 throw MyException("Expression must be a modifiable lvalue", token);
             right = makeTypeCoerce(right, rightType, leftType);
             return rightType;
     }
-    else if (isEq(token, _SEPARATION, ".")) {
+    if (isEq(token, _SEPARATION, ".")) {
 
             if(!dynamic_cast<StructSymbol*>(leftType))
                 throw MyException("Left operand of . must be a structure", token);
             return rightType;
     }
-    else if (isEq(token, _SEPARATION, "->")) {
+    if (isEq(token, _SEPARATION, "->")) {
         if(!l_pointer || !dynamic_cast<StructSymbol*>(l_pointer->upType()))
                 throw MyException("Left operand of -> must be of pointer-to-structure type");
         return rightType;
     }
 
-   else if (isEq(token, _OPERATION, "-")) {
+   if (isEq(token, _OPERATION, "-")) {
         if((l_pointer && r_pointer) || (l_array && r_array)){
                 if( (l_pointer && r_pointer && (*l_pointer->pointer != r_pointer->pointer))
                    || (l_array && r_array && (*l_array->type != r_array->type)))
@@ -133,7 +134,7 @@ SymbolType *BinOpNode :: getType(){
             }
     }
 
-   else if(isEq(token, _OPERATION, "+")) {
+   if(isEq(token, _OPERATION, "+")) {
             if((l_pointer && r_pointer) || (l_array && r_array))
                 throw MyException("Can't add two pointers");
             if(l_pointer || r_pointer)
@@ -710,6 +711,7 @@ void StringNode :: print(int deep) const{
 void StringNode :: print(ofstream *f, int deep) const{
     *f << string(deep * 2, ' ') << '"' << token->Value << '"' << endl;
 }
+
 
 
 

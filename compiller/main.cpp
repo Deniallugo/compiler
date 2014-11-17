@@ -1,3 +1,5 @@
+
+
 //
 //  main.cpp
 //  compiller
@@ -22,7 +24,7 @@ int main(int argc, char *argv[]){
     createOperations();
     argc = 2;
     argv[1] = "-pe";
-    argv[2] = "08.in";
+    argv[2] = "01.in";
     try{
         if(argc == 1)
             throw MyException("Running without parameters");
@@ -114,6 +116,7 @@ int main(int argc, char *argv[]){
 
 
                 pars.ParseProgram();
+                pars.print();
                 f->close();
                 delete f;
             }

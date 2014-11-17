@@ -133,7 +133,6 @@ bool Scanner::isEnd(){
     keyWords["break"] = "kwBreak";
     keyWords["catch"] = " kwCatch";
     keyWords["char"] = "kwChar";
-    keyWords["const"] = " kwConst";
     keyWords["continue"] = " kwContinue";
     keyWords["default"] = " kwDefault";
     keyWords["delete"] = " kwDelete";
@@ -148,7 +147,6 @@ bool Scanner::isEnd(){
     keyWords["if"] = "kwIf";
     keyWords["int"] = "kwInteger number ";
     keyWords["long"] = "kwLong";
-    keyWords["struct"] = "kwStruct";
     keyWords["this"] = "kwThis";
     keyWords["true"] = "kwTrue";
     keyWords["typedef"] = "kwTypedef";
@@ -156,6 +154,7 @@ bool Scanner::isEnd(){
     keyWords["return"] = " kwReturn";
     keyWords["void"] = "kwVoid";
     keyWords["while"] = "kwWhile";
+
 
 }
 
@@ -360,11 +359,28 @@ bool Scanner::Next(){
                     }
 
             case SYMBOL:
-                while (isSymbol(ch) && !f.eof()){
-
+                while ((isSymbol(ch) ||isNumber(ch)) && !f.eof()){
+                    col++;
                     s += ch;
                     f.get(ch);
 
+                }
+
+                if ( s == "struct"){
+                    t = new Token("struct", _STRUCT, s, keyWords[s], col, line);
+                    f.get(buf);
+                    f.eof() ? cas = END : success = true;
+
+                    break;
+                }
+                if ( s == "const"){
+
+
+                    t = new Token("const", _CONST, s, keyWords[s], col, line);
+                    f.get(buf);
+                    f.eof() ? cas = END : success = true;
+
+                    break;
                 }
 
                 if (keyWords.count(s)){
@@ -376,11 +392,6 @@ bool Scanner::Next(){
                    break;
                 }
 
-                while ((isNumber(ch) || isSymbol(ch)) && !f.eof()) {
-                    col++;
-                    s += ch;
-                    f.get(ch);
-                }
 
                 buf = ch;
                 t = new Token("identifer", _IDENTIFIER, s, "identifier :" + s, col, line);

@@ -26,8 +26,4 @@ void Token::Print() const{
 void Token::Print(ofstream *t) const{
     *t << sType << string(13 - sType.length(), ' ') << Value <<"\t line:"<< line << "\t col:" << num << "\t" << Text << string(Text.length(), ' ') << endl;
 }
-/*
-bool Token::operator == (Token* t){
-    return (t->Type == Type && Value == t->Value);
-}
-*/
+

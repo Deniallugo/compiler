@@ -1,1 +1,14 @@
-2*(2+3) + 5 + 7 * 4
+struct w {
+	
+};
+
+int a (){
+	int i ;
+	int as = 10;
+	int n  =34;
+	for ( i = 0 ; i < n ; i++){
+		int q;
+		n ++;
+	}
+	return as;
+}
