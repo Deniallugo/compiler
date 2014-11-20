@@ -24,7 +24,7 @@ int main(int argc, char *argv[]){
     createOperations();
     argc = 2;
     argv[1] = "-pe";
-    argv[2] = "01.in";
+    argv[2] = "22.in";
     try{
         if(argc == 1)
             throw MyException("Running without parameters");

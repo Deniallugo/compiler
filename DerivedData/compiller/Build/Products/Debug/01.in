@@ -1,14 +1,9 @@
-struct w {
-	
-};
+void a ( int d);
+void a( int s){
+	int x = 0;
+}
 
-int a (){
-	int i ;
-	int as = 10;
-	int n  =34;
-	for ( i = 0 ; i < n ; i++){
-		int q;
-		n ++;
-	}
-	return as;
+int main(){
+return 0;
+	
 }

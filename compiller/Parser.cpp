@@ -1,5 +1,5 @@
 //
-//  Parser2.cpp
+//  Parser.cpp
 //  compiller
 //
 //  Created by Данил on 11.11.14.
@@ -57,22 +57,6 @@ static bool isType(Token * token, bool reset, bool finish = false) {
 
 }
 
-bool Parser::findPriority(Token * op, int priority) {
-    switch (priority) {
-        case 0: return isEq(op, _OPERATION, "||"); break;
-        case 1: return isEq(op, _OPERATION, "&&"); break;
-        case 2: return isEq(op, _OPERATION, "|"); break;
-        case 3: return isEq(op, _OPERATION, "^"); break;
-        case 4: return isEq(op, _OPERATION, "&"); break;
-        case 5: return isEq(op, _OPERATION, "==") || isEq(op, _OPERATION, "!="); break;
-        case 6: return isEq(op, _OPERATION, ">") || isEq(op, _OPERATION, "<") || isEq(op, _OPERATION, ">=") || isEq(op, _OPERATION,"<="); break;
-        case 7: return  isEq(op, _OPERATION,"<<") ||
-            isEq(op, _OPERATION,">>"); break;
-        case 8: return isEq(op, _OPERATION, "+") || isEq(op, _OPERATION, "-");  break;
-        case 9: return isEq(op, _OPERATION, "*") || isEq(op, _OPERATION,"/") || isEq(op, _OPERATION, "%"); break;
-    }
-    return false;
-}
 Parser :: Parser(Scanner &l) : scan(l), parsingFunc(0), struct_counter(0){
 
     scan.Next();
@@ -86,7 +70,7 @@ Parser :: Parser(Scanner &l) : scan(l), parsingFunc(0), struct_counter(0){
 
     priorityTable["-"] = priorityTable["+"] = 12;
 
-    // priorityTable[sr] = priorityTable[sl] = 11;
+    priorityTable["<<"] = priorityTable[">>"] = 11;
 
     priorityTable["<="] = priorityTable[">="] =
     priorityTable[">"] = priorityTable["<"] = 10;
@@ -127,20 +111,20 @@ Parser :: Parser(Scanner &l) : scan(l), parsingFunc(0), struct_counter(0){
     operationTypeOperands["&"] = IntType;
     operationTypeOperands["|"] = IntType;
     operationTypeOperands["^"] = IntType;
-    //operationTypeOperands[b_not] = IntType;
-    //   operationTypeOperands[sl] = IntType;
-    // operationTypeOperands[sr] = IntType;
+    operationTypeOperands["~"] = IntType;
+    operationTypeOperands[">>"] = IntType;
+    operationTypeOperands["<<"] = IntType;
 
     operationReturningType["%"] = IntType;
     operationReturningType["&"] = IntType;
     operationReturningType["|"] = IntType;
     operationReturningType["!"] = IntType;
-    //    operationReturningType[sl] = IntType;
-    //    operationReturningType[sr] = IntType;
+    operationReturningType[">>"] = IntType;
+    operationReturningType["<<"] = IntType;
     operationReturningType["&&"] = IntType;
     operationReturningType["||"] = IntType;
     operationReturningType["^"] = IntType;
-    //    operationReturningType[l_not] = IntType;
+    operationReturningType["~"] = IntType;
     operationReturningType["=="] = IntType;
     operationReturningType["!="] = IntType;
     operationReturningType["<"] = IntType;
@@ -168,14 +152,18 @@ void Parser :: ParseProgram(){
         else
             global_field.body.push_back(ParseExpr());
     }
+    if (!main_func) {
+        throw MyException("There аrе no entry point \n");
+    }
+    
+
 }
 
 
-void Parser  :: ParseDeclaration(){
+ExprNode* Parser  :: ParseDeclaration(){
     auto t_symbol = ParseType();
     VarSymbol* var = NULL;
-
-
+    BinOpNode *node = nullptr;
     while(true){
         Token *token = scan.GetNext();
         if(isEq(token, _SEPARATION, ";" )&& t_symbol->isStruct())
@@ -184,14 +172,10 @@ void Parser  :: ParseDeclaration(){
             StructSymbol* structParsing = dynamic_cast<StructSymbol*>(t_symbol->getType());
             structParsing->m_fields = ParseStructBlock();
             symStack->push(structParsing->m_fields);
-            // symStack->add_symbol(t_symbol);
-          //  t_symbol = ParseType();
             scan.Next();
 
             symStack->pop();
             break;
-//            symStack->push(new SymTable());
-            //symStack->add_symbol(t_symbol);
         }
         if (isEq(scan.Get(), _SEPARATION,"("))
             var =  ParseComplexDeclaration(t_symbol);
@@ -204,45 +188,47 @@ void Parser  :: ParseDeclaration(){
         if(isEq(scan.Get(), _OPERATION, "=")){
             Token *asgn = scan.Get();
             scan.Next();
-            ExprNode *assign_operand = ParseExpr(priorityTable[","] + 1);
-            BinOpNode *node = new BinOpNode(asgn, new IdentifierNode(token, var), assign_operand);
+           ExprNode* assign_operand = ParseExpr(priorityTable[","] + 1);
+
+            //   parsingFunc->body->AddStatement(assign)
+           node = new BinOpNode(asgn, new IdentifierNode(token, var), assign_operand);
             if ( var->getType() == node->getType())
-                var->init = node;
+                var->init = node; 
+
         }
         if(isEq (scan.Get(),_SEPARATION,"{")){
             // symStack->push(new SymTable());
+
             FuncSymbol *func = dynamic_cast<FuncSymbol*>(var->type);
             errorIf(!func, "Unexpected brace", scan.Get());
             errorIf((symStack->tables.size() != 2), "Can not define the function in the block", scan.Get());
             parsingFunc = func;
             func->body = ParseBlock();
-
             parsingFunc = 0;
             CheckReturn(func);
+            if(func->name == "main")
+                main_func = 1;
             scan.Next();
-            
+            break;
+
         }
 
-        if(isEq (scan.Get(),_SEPARATION,";") || isEq (scan.Get(),_SEPARATION,"{")){
+        if(isEq (scan.Get(),_SEPARATION,";")){
             scan.Next();
-
+            return node;
             break;
         }
         if(isEq (scan.Get(),_SEPARATION,","))
             throw MyException("Comma expected", scan.Get());
         //scan.Next();
-        if(isEq(scan.Get(), _SEPARATION, "}")){
+        if(isEq(scan.Get(), _SEPARATION, "}") || scan.isEnd()){
 
             //symStack->pop();
             scan.Next();
             break;
         }
-
-
-
-
-
     }
+    return node;
 }
 
 SymbolType * Parser :: ParseType(bool param){
@@ -317,7 +303,6 @@ StructSymbol* Parser :: ParseStruct(bool param){
 
 
 FunctionalNode* Parser :: ParseFuncCall(ExprNode *r){
-    Token* next = scan.Get();
     FunctionalNode* f = new FunctionalNode(r->token, r, dynamic_cast<FuncSymbol*>(r->getType()));
     scan.Next();
     Token* t = scan.Get();
@@ -336,21 +321,21 @@ FunctionalNode* Parser :: ParseFuncCall(ExprNode *r){
 }
 
 
-
+/*
 ExprNode* Parser :: ParseExpr(int priority){
     if (priority > 15)
         return ParseFactor();
     ExprNode *left = ParseExpr(priority + 1);
     ExprNode *root = left;
     Token *op = scan.Get();
+
     if(scan.isEnd() ||
        isEq(op, _SEPARATION, "}") ||
        isEq(op, _SEPARATION, ")") ||
-       isEq(op, _SEPARATION, "]")||
+       isEq(op, _SEPARATION, "]") ||
        isEq(op, _SEPARATION, ":") ||
        isEq(op, _SEPARATION, ";") ||
-       isEq(op, _SEPARATION, "{") ||
-       isEq(op, _SEPARATION, "}")){
+       isEq(op, _SEPARATION, "{")){
         //root->getType();
         return root;
     }
@@ -388,15 +373,77 @@ ExprNode* Parser :: ParseExpr(int priority){
             if(isEq(op, _SEPARATION, "]"))
                 break;
             scan.Next();
-            root = new BinOpNode(op, root, ParseExpr(priority + !right[oper]));
+            root = new BinOpNode(op, root, ParseExpr(priority));
         }
         op = scan.Get();
     }
-    root->getType();
+    //root->getType();
     return root;
 }
+*/
 
 
+
+ExprNode* Parser :: ParseExpr(int priority){
+    while (priority < 15){
+       // return ParseFactor();
+    ExprNode *left = ParseExpr(priority + 1);
+    ExprNode *root = left;
+    Token *op = scan.Get();
+
+    if(scan.isEnd() ||
+       isEq(op, _SEPARATION, "}") ||
+       isEq(op, _SEPARATION, ")") ||
+       isEq(op, _SEPARATION, "]") ||
+       isEq(op, _SEPARATION, ":") ||
+       isEq(op, _SEPARATION, ";") ||
+       isEq(op, _SEPARATION, "{")){
+        //root->getType();
+        return root;
+    }
+
+
+    errorIf(op->Type != _OPERATION && (isEq(op, _SEPARATION, ",")), "Invalid expression. Operation expected",op);
+    if(priorityTable[op->Value] < priority)
+        return root;
+    while(!scan.isEnd() && op->Type == _OPERATION && (priorityTable[op->Value] >= priority) && op->Value != "}"){
+        string oper = op->Value;
+
+        if(oper == "("){
+            root = ParseFuncCall(root);
+        }
+        else if(oper == "["){
+            root = ParseArrIndex(root);
+            break;
+        }
+        else if(oper == "--" ||oper == "++"){
+            root = new PostfixUnaryOpNode(op, root);
+            scan.Next();
+        }
+        else if(oper == "?"){
+            scan.Next();
+            ExprNode* l = ParseExpr();
+            if(scan.Get()->Value != ":")
+                throw MyException("Invalid ternary operator", scan.Get());
+            scan.Next();
+            ExprNode* r = ParseExpr();
+            root = new TernaryOpNode(op, root, l, r);
+        } else if(oper == "." || oper == "->")
+            root = ParseMember(root);
+        else
+        {
+            if(isEq(op, _SEPARATION, "]"))
+                break;
+            scan.Next();
+            root = new BinOpNode(op, root, ParseExpr(priority));
+        }
+        op = scan.Get();
+    }
+    //root->getType();
+    return root;
+
+    }
+}
 
 ExprNode* Parser :: ParseFactor(){
     ExprNode *root = nullptr;
@@ -425,6 +472,7 @@ ExprNode* Parser :: ParseFactor(){
             root = new IdentifierNode(token, dynamic_cast<VarSymbol*>(sym));
             if(isEq(scan.GetNext() ,_SEPARATION ,"("))
                 root = ParseFuncCall(root);
+            //scan.Next();
             return root;
         }
 
@@ -441,7 +489,6 @@ ExprNode* Parser :: ParseFactor(){
             string kw = token->Value;
             if(kw == "char" || kw == "int" || kw == "float"){
                 scan.Next();
-                Token *t = scan.Get();
                 string typeName = kw ;
                 errorIf(isEq(scan.Get(), _SEPARATION, "("), "Expected open bracket '('", token);
                 root = new CastNode(token, ParseExpr(), typeName);
@@ -456,10 +503,15 @@ ExprNode* Parser :: ParseFactor(){
             if(unary[token->Value]){
                 scan.Next();
                 root = new UnOpNode(token, ParseExpr(priorityTable["--"]));
-            } else 	if(isEq(scan.Get(), _SEPARATION, "(")){
+            } else
+                throw MyException("Wrong expression", token);
+            break;
+
+        case _SEPARATION :
+            if(isEq(scan.Get(), _SEPARATION, "(")){
                 scan.Next();
                 root = ParseExpr();
-                if(isEq(scan.Get(), _SEPARATION, ")"))
+                if(!isEq(scan.Get(), _SEPARATION, ")"))
                     throw MyException("Expected closing bracket");
             }
             else
@@ -666,29 +718,41 @@ VarSymbol * Parser :: ParseIdentifier(SymbolType *type, bool param){
         errorIf(type->name == "void", "Incomplete type is invalid", token);
         if(isEq(token, _SEPARATION, "["))
             type = ParseArrayDimension(type);
-    } else
+    } else{
+        VarSymbol* buf = new VarSymbol(name,type) ;
+                if((symbolBuffer = symStack->tables.back()->find_symbol(name)) != 0  ){
+                    buf = dynamic_cast<VarSymbol*>(symbolBuffer);
+                    FuncSymbol* func  = dynamic_cast<FuncSymbol*>(buf->type);
+                    FuncSymbol* func1 = createFunction(name, type);
+                    errorIf(!CheckArgs(func, func1), "Redefinition");
+                }
         type = createFunction(name, type);
-
+    }
     result = new VarSymbol(name, type);
     token = scan.Get();
+
     errorIf(symStack->tables.back()->find_symbol(name) != 0, "Redefinition", token);
     errorIf(!(isEq(token, _SEPARATION, ",")|| isEq(token, _SEPARATION, ";") || isEq(token, _OPERATION, "=") ||isEq(token, _SEPARATION, "{")),
             "Semicolon expected", scan.Get());
     return result;
 }
+bool Parser::CheckArgs(FuncSymbol *func1, FuncSymbol *func2){
+    for( int i = 0 ; i < func1->params->name.size();i++){
 
+        if(func1->params->sym_ptr[i]->getType() != func2->params->sym_ptr[i]->getType())
+            return 0;
+    }
+    return 1;
+}
 
 void Parser  :: CheckReturn(FuncSymbol *func){
-    ReturnStatement *ret = 0;
+    ReturnStatement *ret = nullptr;
     SymbolType *real_type = func->value->getType();
     int size = func->body->body.size();
     for(int i = 0; i < size && !ret; i++)
         ret = dynamic_cast<ReturnStatement*>(func->body->body[i]);
-    if(!ret)
-        return;
-
-    if(!ret->value){
-        errorIf(*real_type != "void", "Wrong return type", scan.Get());
+    if(!ret || !ret->value){
+        errorIf(real_type->name != "void", "Wrong return type", scan.Get());
         return;
     }
     SymbolType *a = ret->value->getType();
@@ -700,11 +764,13 @@ Block* Parser :: ParseBlock(){
     symStack->push(block->table);
     if(isEq(scan.Get(), _SEPARATION, "{")){
         Token *token =scan.GetNext();
-        while(!isEq(scan.Get(), _SEPARATION, "}")){
-            if((token->Value == "const" || token->Value == "struct" || symStack->find_type(token->Value))
+        while(!isEq(scan.Get(), _SEPARATION, "}") && !scan.isEnd()){
+            if((token->Value == "const" || token->Value == "struct" || symStack->find_type(token->Value)|| token->Value ==";")
                &&(!dynamic_cast<FuncSymbol*>(symStack->find_type(token->Value))))
             {
-                ParseDeclaration();
+                ExprNode * buf = ParseDeclaration();
+                if ( buf)
+                    block->AddStatement( buf);
             }
             else {
                 block->AddStatement(ParseStatement());
@@ -723,7 +789,9 @@ Block* Parser :: ParseBlock(){
             scan.Next();
         }
     }
-     symStack->pop();
+    errorIf (!isEq(scan.Get(), _SEPARATION, "}"),"Unexpected brace", scan.Get());
+
+    symStack->pop();
     return block;
 }
 
@@ -767,7 +835,7 @@ ForStatement* Parser :: ParseFor(){
     errorIf(!isEq(scan.Get(), _SEPARATION, ")"), "Closing bracket expected", scan.Get());
     scan.Next();
     Block *body = ParseBlock();
-    scan.Next();
+    //  scan.Next();
     return new ForStatement(first, second, third, body);
 }
 
@@ -820,15 +888,15 @@ ExprNode* Parser :: ParseStatement(){
     Token *token = scan.Get();
     if(token->Value == "if")
         return ParseIf();
-    else if(token->Value == "for")
+    if(token->Value == "for")
         return ParseFor();
-    else if(token->Value == "while")
+    if(token->Value == "while")
         return ParseWhile();
-    else if(token->Value == "do")
+    if(token->Value == "do")
         return ParseDoWhile();
-    else if(isEq(token, _SEPARATION, "("))
+    if(isEq(token, _SEPARATION, "("))
         return ParseBlock();
-    else if(token->Value == "return" || token->Value == "break" || token->Value == "continue")
+    if(token->Value == "return" || token->Value == "break" || token->Value == "continue")
         return ParseJumpStatement();
     else
         return ParseExpr();
@@ -838,7 +906,7 @@ ExprNode* Parser :: ParseStatement(){
 Statement* Parser :: ParseJumpStatement(){
     Statement *jump = 0;
     if(scan.Get()->Value =="return"){
-        ExprNode *arg = (isEq(scan.GetNext(),_SEPARATION,";")) ? ParseExpr() : 0;
+        ExprNode *arg = (!isEq(scan.GetNext(),_SEPARATION,";")) ? ParseExpr() : 0;
         jump = new ReturnStatement(arg);
         errorIf(!isEq(scan.Get(),_SEPARATION,";"), "Semicolon expected", scan.Get());
         errorIf(!parsingFunc, "Unexpected return statement", scan.Get());
@@ -847,9 +915,9 @@ Statement* Parser :: ParseJumpStatement(){
         jump = new BreakStatement();
     else  if(scan.Get()->Value =="continue")
         jump = new ContinueStatement();
-
-
-
+    
+    
+    
     errorIf(isEq(scan.GetNext() ,_SEPARATION,";"), "Semicolon expected", scan.Get());
     return jump;
 }

@@ -19,17 +19,16 @@ class Parser{
     map <string, int> priorityTable;
     map <string, bool> right;
     map <string, bool> unary;
-    ExprNode * m_top;
-    Symbol * m_symbolBuffer;
-    FuncSymbol *parsingFunc;
 
-    //SymTableStack tablesStack;
+    ExprNode * m_top;
+    Symbol * symbolBuffer;
+    FuncSymbol *parsingFunc;
+    bool main_func;
     Block global_field;
     std::map<string, bool> assignmentOper, unaryOper;
     SymTableStack *symStack;
      //Symbol * m_symbolBuffer;
 
-    // helper methods
     void errorIf(bool, string, Token * = NULL);
     void errorIf_sem(bool, string, Token * = NULL);
     bool isBaseType(Token *);
@@ -39,8 +38,9 @@ public:
     
     void parse();
     void ParseProgram();
-    void ParseDeclaration();
+    ExprNode* ParseDeclaration();
     SymTable* ParseStructBlock();
+    bool CheckArgs(FuncSymbol* func1, FuncSymbol* func2);
     ExprNode* ParseAssing();
     ExprNode* ParseCond();
     VarSymbol* ParseDirectDeclaration();

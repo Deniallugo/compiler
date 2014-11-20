@@ -512,7 +512,7 @@ bool Scanner::Next(){
                         ms = " Unexpected end of file";
                     else
                         ms = " There is no closing quote";
-                    ErrorIf (ch != '\'' || f.eof(), ms);
+                    ErrorIf (ch != '\'' || f.eof(), ms);;;;;;;;;;;;
 
 
 
