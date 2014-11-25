@@ -31,7 +31,7 @@ enum States{
 void Scanner::CheckEscape(char ch , string s){
 
     if ( ch == 'e'){
-         f.get(buf);
+        f.get(buf);
         if ( isNumber(buf) || buf == '+' || buf == '-'){
             col += 2;
             s +=ch;
@@ -51,7 +51,7 @@ void Scanner::CheckEscape(char ch , string s){
 
 bool Scanner::ErrorIf(bool op, string message){
     if (op)
-        throw MyException( message, line, col);
+    throw MyException( message, line, col);
     return op;
 
 }
@@ -76,12 +76,14 @@ bool Scanner::isOperation(char c){
     c == '+' ||
     c == '-' ||
     c == '*' ||
+    c == '~' ||
     c == '/' ||
     c == '&' ||
     c == '%' ||
     c == '|' ||
     c == '.' ||
     c == '^' ||
+    c == ':' ||
     c == '?' ||
     c == '!';
 }
@@ -106,10 +108,10 @@ bool Scanner::isSpace(char c){
         return true;
     }
     else
-        if (c == ' ' || c == '\t'){
-            col++;
-            return true;
-        }
+    if (c == ' ' || c == '\t'){
+        col++;
+        return true;
+    }
     return false;
 }
 
@@ -126,7 +128,7 @@ bool Scanner::isEnd(){
 }
 
 
- void createKeyWords(){
+void createKeyWords(){
 
     keyWords["for"] = "kwFor";
     keyWords["bool"] = "kwBool";
@@ -137,7 +139,7 @@ bool Scanner::isEnd(){
     keyWords["default"] = " kwDefault";
     keyWords["delete"] = " kwDelete";
     keyWords["do"] = " kwDo";
-    keyWords["double"] = " kwDouble";
+  //  keyWords["double"] = " kwDouble";
     keyWords["else"] = " kwElse";
     keyWords["enum"] = "kwEnum";
     keyWords["false"] = " kwFalse";
@@ -158,7 +160,7 @@ bool Scanner::isEnd(){
 
 }
 
- void createOperations(){
+void createOperations(){
     Operations["+"] = "plus";
     Operations["-"] = "minus";
     Operations["*"] = "mul";
@@ -182,6 +184,7 @@ bool Scanner::isEnd(){
     Operations["~"] = "byte not";
     Operations["!="] = "non equal";
     Operations["->"] = "arrow";
+    Operations["."] = "point";
 
 
 }
@@ -203,8 +206,12 @@ Scanner::Scanner(Scanner const &scan){
 }
 
 bool Scanner::Next(){
-    if (last_token)
+    if (last_token){
+        //   t = new Token("End", _END_OF_FILE,"end","end", line, col);
+
         return end_of_file = true;
+        
+    }
     States cas = BEGIN;
     char ch;
     bool point = false;
@@ -226,315 +233,325 @@ bool Scanner::Next(){
     ch = buf;
     bool success = false;
     while (!success)
-        switch (cas) {
+    switch (cas) {
             case BEGIN:
-                if (isNumber(ch)){
-                    cas = NUMBER;
-                    break;
-                }
-                else if (isSymbol(ch)){
-                    cas = SYMBOL;
-                    break;
-                }
-
-                else if (ch == '\"'){
-                    cas = STRINGT;
-                    break;
-                }
-                else if (ch == '\''){
-                    cas = CHARs;
-                    break;
-                }
-                else if ( ch == '/'){
-                    f.get(buf);
-                    if ( buf == '/' || buf == '*'){
-                        cas = COMMENT;
-                        break;
-                    }
-                    if (isNumber(buf) || buf == '.' || buf == '(' || buf == '-' || isSymbol(buf) || isSpace(buf)
-                        ){
-                        cas = OPERATION;
-                        break;
-                    }
-
-                }
-                else if (isSeparation(ch)) {
-                    if (ch == '.'){
-                        f.get(buf);
-                        col++;
-                        if (isNumber(buf)){
-                            point = true;
-                            cas = NUMBER;
-                        }
-                        break;
-                    }
-
-                    cas = SEPARATION;
-                    break;
-                }
-                else if (isOperation(ch)){
-                    cas = OPERATION;
-                    f.get(buf);
-                    break;
-                }
-
-                if (isSpace(ch)){
-                        f.get(ch);
-                        if(f.eof()){
-                            cas = END ;
-                            t = new Token("End", _END_OF_FILE, "", "", col, line);
-                            break;
-                        }
-
-                    break;
-                }
-                throw MyException("\n There are no symbols in file or unknown symbol");
-            case NUMBER:
-                if (!point){
-                    while (isNumber(ch) && !f.eof()){
-                        col++;
-                        s += ch;
-                        f.get(ch);
-                    }
-                    if (ch == '.' && !point && !f.eof()){
-                        f.get(buf);
-                        point = true;
-                        break;
-                    }
-
-                    if (f.eof()){
-
-                        if (point)
-                            t = new Token("float", _FLOAT, s, s, col, line);
-                        else
-                            t = new Token("integer", _INTEGER, s, s, col, line);
-
-                        f.eof() ? cas = END : success = true;
-                        break;
-
-                    }
-
-                    CheckEscape(ch, s);
-                    f.eof() ? cas = END : success = true;
-                    if (ch != '.'){
-
-                        if (!ErrorIf(!isOperation(ch)&&!isSpace(ch) && !isSeparation(ch) && !f.eof(),  "wrong number")){
-                            t = new Token("integer", _INTEGER, s, s, col, line);
-                            f.eof() ? cas = END : success = true;
-                            if (isSeparation(ch) || isOperation(ch))
-                                buf = ch;
-                            else
-                                buf = '#';
-                            break;
-                        }
-
-                    }
-                }
-                else{
-                    s += ".";
-                    ch = buf;
-                    while (isNumber(ch) && !f.eof()){
-                        col++;
-                        s += ch;
-                        f.get(ch);
-
-                    }
-
-                    CheckEscape(ch, s);
-                    f.eof() ? cas = END : success = true;
-
-
-                    ErrorIf(ch == '.' ,"wrong number");
-
-                    ErrorIf(!isSpace(ch) && !isSeparation(ch) && !f.eof(),  "wrong number");
-                            col++;
-                            t = new Token("float", _FLOAT, s, s, col, line);
-                            f.eof() ? cas = END : success = true;
-                            if (isSeparation(ch))
-                                buf = ch;
-
-
-
-                        break;
-                    }
-
-            case SYMBOL:
-                while ((isSymbol(ch) ||isNumber(ch)) && !f.eof()){
-                    col++;
-                    s += ch;
-                    f.get(ch);
-
-                }
-
-                if ( s == "struct"){
-                    t = new Token("struct", _STRUCT, s, keyWords[s], col, line);
-                    f.get(buf);
-                    f.eof() ? cas = END : success = true;
-
-                    break;
-                }
-                if ( s == "const"){
-
-
-                    t = new Token("const", _CONST, s, keyWords[s], col, line);
-                    f.get(buf);
-                    f.eof() ? cas = END : success = true;
-
-                    break;
-                }
-
-                if (keyWords.count(s)){
-                    col++;
-                    t = new Token("keyword", _KEYWORD, s, keyWords[s], col, line);
-                    f.get(buf);
-                    f.eof() ? cas = END : success = true;
-
-                   break;
-                }
-
-
-                buf = ch;
-                t = new Token("identifer", _IDENTIFIER, s, "identifier :" + s, col, line);
-                f.eof() ? cas = END : success = true;
+            if (isNumber(ch)){
+                cas = NUMBER;
                 break;
+            }
+            else if (isSymbol(ch)){
+                cas = SYMBOL;
+                break;
+            }
 
-            case SEPARATION:
-
-                col++;
-                if ((buf == '/' || buf == '*') && ch == '/'){
+            else if (ch == '\"'){
+                cas = STRINGT;
+                break;
+            }
+            else if (ch == '\''){
+                cas = CHARs;
+                break;
+            }
+            else if ( ch == '/'){
+                f.get(buf);
+                if ( buf == '/' || buf == '*'){
                     cas = COMMENT;
                     break;
                 }
-                s += ch;
-                t = new Token("separation", _SEPARATION, s, Separations[s], col, line);
+                if (isNumber(buf) || buf == '.' || buf == '(' || buf == '-' || isSymbol(buf) || isSpace(buf)
+                    || buf == '='
+                    ){
+                    cas = OPERATION;
+                    break;
+                }
+
+            }
+            else if (isSeparation(ch)) {
+
+                cas = SEPARATION;
+                break;
+            }
+            else if (isOperation(ch)){
+                cas = OPERATION;
                 f.get(buf);
+                break;
+            }
+
+            if (isSpace(ch)){
+                f.get(ch);
+                if(f.eof()){
+                    cas = END ;
+                    t = new Token("End", _END_OF_FILE, "", "", col, line);
+                    break;
+                }
+
+                break;
+            }
+            throw MyException("\n There are no symbols in file or unknown symbol");
+            case NUMBER:
+            if (!point){
+                while (isNumber(ch) && !f.eof()){
+                    col++;
+                    s += ch;
+                    f.get(ch);
+                }
+                if (ch == '.' && !point && !f.eof()){
+                    f.get(buf);
+                    point = true;
+                    break;
+                }
+
+                if (f.eof()){
+
+                    if (point)
+                    t = new Token("float", _FLOAT, s, s, col, line);
+                    else
+                    t = new Token("integer", _INTEGER, s, s, col, line);
+
+                    f.eof() ? cas = END : success = true;
+                    break;
+
+                }
+
+                CheckEscape(ch, s);
+                f.eof() ? cas = END : success = true;
+                if (ch != '.'){
+
+                    if (!ErrorIf(!isOperation(ch)&&!isSpace(ch) && !isSeparation(ch) && !f.eof(),  "wrong number")){
+                        t = new Token("integer", _INTEGER, s, s, col, line);
+                        f.eof() ? cas = END : success = true;
+                        if (isSeparation(ch) || isOperation(ch))
+                        buf = ch;
+                        else
+                        buf = '#';
+                        break;
+                    }
+
+                }
+            }
+            else{
+                s += ".";
+                ch = buf;
+                while (isNumber(ch) && !f.eof()){
+                    col++;
+                    s += ch;
+                    f.get(ch);
+
+                }
+
+                CheckEscape(ch, s);
+                f.eof() ? cas = END : success = true;
+
+                buf = ch;
+                ErrorIf(ch == '.' ,"wrong number");
+
+                ErrorIf(!isSpace(ch) && !isSeparation(ch) && !f.eof(),  "wrong number");
+                col++;
+                t = new Token("float", _FLOAT, s, s, col, line);
+                f.eof() ? cas = END : success = true;
+                if (isSeparation(ch))
+                buf = ch;
+
+
+
+                break;
+            }
+
+            case SYMBOL:
+
+            do{
+                col++;
+                s += ch;
+                f.get(ch);
+
+            } while ((isSymbol(ch) ||isNumber(ch)) && !f.eof());
+
+
+            if ( s == "struct"){
+                t = new Token("struct", _STRUCT, s, keyWords[s], col, line);
+                buf = ch;
                 f.eof() ? cas = END : success = true;
 
                 break;
-            case OPERATION:
+            }
+            if ( s == "const"){
 
-                s += ch;
-                if (!f.eof()){
-                    if (isOperation(buf)){
-                        s += buf;
-                        f.get(buf);
-                    }
-                    col++;
+
+                t = new Token("const", _CONST, s, keyWords[s], col, line);
+                buf = ch;
+                f.eof() ? cas = END : success = true;
+
+                break;
+            }
+
+            if (keyWords.count(s)){
+                col++;
+                t = new Token("keyword", _KEYWORD, s, keyWords[s], col, line);
+                buf = ch;
+                // f.get(buf);
+                f.eof() ? cas = END : success = true;
+
+                break;
+            }
+
+
+            buf = ch;
+            t = new Token("identifer", _IDENTIFIER, s, "identifier :" + s, col, line);
+            f.eof() ? cas = END : success = true;
+            break;
+
+            case SEPARATION:
+
+            col++;
+            if ((buf == '/' || buf == '*') && ch == '/'){
+                cas = COMMENT;
+                break;
+            }
+            s += ch;
+            t = new Token("separation", _SEPARATION, s, Separations[s], col, line);
+            f.get(buf);
+            f.eof() ? cas = END : success = true;
+
+            break;
+            case OPERATION:
+            if (ch == '.'){
+
+                if (isNumber(buf)){
+                    point = true;
+                    cas = NUMBER;
+                    break;
                 }
+                s+=ch;
                 t = new Token("Operation", _OPERATION, s, Operations[s], col, line);
                 f.eof() ? cas = END : success = true;
 
+
                 break;
+            }
+
+
+            s += ch;
+            if (!f.eof()){
+                if (isOperation(buf) && ch != '*'){
+                    s += buf;
+                    f.get(buf);
+                }
+                col++;
+            }
+            t = new Token("Operation", _OPERATION, s, Operations[s], col, line);
+            f.eof() ? cas = END : success = true;
+
+            break;
 
             case STRINGT:
 
-                f.get(ch);
+            f.get(ch);
+            f.get(buf);
+            col += 2;
+
+            while (((buf != '\"') && (buf != '\n') && (!f.eof())) ||
+                   ((ch == 92) && (buf == '\"') && (buf != '\n') && (!f.eof()))){
+                s += ch;
+                ch = buf;
                 f.get(buf);
-                col += 2;
+                col++;
+            }
 
-                while (((buf != '\"') && (buf != '\n') && (!f.eof())) ||
-                       ((ch == 92) && (buf == '\"') && (buf != '\n') && (!f.eof()))){
-                    s += ch;
-                    ch = buf;
-                    f.get(buf);
-                    col++;
-                }
-
-                if (! ErrorIf(buf != '\"', "There is no closing quote")){
-                    s += ch;
-                    f.get(buf);
-                    col++;
-                }
-
+            if (! ErrorIf(buf != '\"', "There is no closing quote")){
+                s += ch;
                 f.get(buf);
-                t = new Token("string", _STRING, "\"" + s + "\"", s, col, line);
-                f.eof() ? cas = END : success = true;
-                break;
-                
+                col++;
+            }
+
+            f.get(buf);
+            t = new Token("string", _STRING, "\"" + s + "\"", s, col, line);
+            f.eof() ? cas = END : success = true;
+            break;
+
             case COMMENT:
-                if (buf == '/'){
-                    while (ch != '\n' && !f.eof()) {
-                        col++;
-                        f.get(ch);
-                        
-                    }
-                    t = new Token("comment", _COMMENT, s, "not usable text", col, line);
+            if (buf == '/'){
+                while (ch != '\n' && !f.eof()) {
+                    col++;
+                    f.get(ch);
 
                 }
-                else{
-                    while ((ch != '*' || buf != '/') && !f.eof()){
-                        col += 2;
-                        if (ch == '\n'){
-                            col = 0;
-                            line++;
-                        }
+                t = new Token("comment", _COMMENT, s, "not usable text", col, line);
 
-                        f.get(ch);
-                        if (ch == '*'){
-                            f.get(buf);
-                            if (buf != '/') {
-                                ch = buf;
-                            }
+            }
+            else{
+                while ((ch != '*' || buf != '/') && !f.eof()){
+                    col += 2;
+                    if (ch == '\n'){
+                        col = 0;
+                        line++;
+                    }
+
+                    f.get(ch);
+                    if (ch == '*'){
+                        f.get(buf);
+                        if (buf != '/') {
+                            ch = buf;
                         }
                     }
-                    ErrorIf(ch == '/' && buf == '*' && !f.eof(), "There is no closing comment");
-                     t = new Token("multi_comment", _COMMENT, s, "not usable text", col, line);
-
                 }
-                f.get(ch);
-                buf = '#';
-                f.eof() ? cas = END : success = true;
-                
-                break;
-                
-                
+                ErrorIf(ch == '/' && buf == '*' && !f.eof(), "There is no closing comment");
+                t = new Token("multi_comment", _COMMENT, s, "not usable text", col, line);
+
+            }
+            f.get(ch);
+            buf = '#';
+            f.eof() ? cas = END : success = true;
+
+            break;
+
+
             case CHARs:
-                
+
+            f.get(ch);
+            col++;
+            ErrorIf (ch == '\''," There is no character in single quotes");
+            if (ch == '\n' || f.eof()){
+
+
+                success = true;
                 f.get(ch);
                 col++;
-                ErrorIf (ch == '\''," There is no character in single quotes");
-                if (ch == '\n' || f.eof()){
-
-
-                    success = true;
-                    f.get(ch);
-                    col++;
-                    if (ch == 't')
-                        s += '\t';
-                    else if (ch == 'n')
-                        s += '\n';
-                    else
-                        s += ch;
-                    f.get(ch);
-                    col++;
-                    string ms;
-                    if (f.eof())
-                        ms = " Unexpected end of file";
-                    else
-                        ms = " There is no closing quote";
-                    ErrorIf (ch != '\'' || f.eof(), ms);;;;;;;;;;;;
-
-
-
-                }
+                if (ch == 't')
+                s += '\t';
+                else if (ch == 'n')
+                s += '\n';
+                else
                 s += ch;
                 f.get(ch);
                 col++;
-                ErrorIf (ch != '\'', "Too many characters in quotes");
-                t = new Token("char", _CHAR, s, s, line, col);
-                col++;
-                f.get(buf);
-                f.eof() ? cas = END : success = true;
-                break;
-                    
+                string ms;
+                if (f.eof())
+                ms = " Unexpected end of file";
+                else
+                ms = " There is no closing quote";
+                ErrorIf (ch != '\'' || f.eof(), ms);;;;;;;;;;;;
+
+
+
+            }
+            s += ch;
+            f.get(ch);
+            col++;
+            ErrorIf (ch != '\'', "Too many characters in quotes");
+            t = new Token("char", _CHAR, s, s, line, col);
+            col++;
+            f.get(buf);
+            f.eof() ? cas = END : success = true;
+            break;
+
 
             case END:
-                end_of_file = true;
-                return last_token = true;
-            default:
-                break;
+            end_of_file = true;
+            return last_token = true;
+        default:
+            break;
 
-        }
+    }
     return end_of_file;
 }
 

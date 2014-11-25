@@ -20,7 +20,7 @@ using namespace std;
 static bool isEq(Token* t, TYPES _type,  string _value){
     return (t->Type == _type && t->Value == _value);
 }
-
+//
 static bool isAssing(Token* op){
     return (isEq(op, _OPERATION, "=")||
             isEq(op, _OPERATION, "+=")||
@@ -61,6 +61,7 @@ public:
     friend class Parser;
     friend class BinaryOpNode;
     friend class MyException;
+    Token* getToken(){ return token;}
     ExprNode(){token = nullptr;}
     ExprNode(Token* t):token(t){}
     ExprNode* init_var(SymbolType *);
@@ -270,7 +271,7 @@ protected:
 public:
     SymbolType *getType();
     FunctionalNode(ExprNode *n);
-    FunctionalNode(Token *t,ExprNode *n, FuncSymbol *s);
+    FunctionalNode(Token *t,ExprNode *n, FuncSymbol *s = nullptr);
     void addArg(ExprNode* arg);
 };
 
@@ -293,8 +294,11 @@ class Block : public Statement{
 private:
     vector<ExprNode*> body;
     SymTable *table;
+
     friend class Parser;
+
 public:
+    bool isCanUseBreak = false;
     Block() : table(new SymTable()) {}
     Block(SymTable *t) : table(t) {}
     void AddStatement(ExprNode *st) { body.push_back(st); }
@@ -344,7 +348,8 @@ private:
     ExprNode *third_cond;
     Block *body;
 public:
-    ForStatement(ExprNode *first, ExprNode *second, ExprNode *third, Block *block) : first_cond(first), second_cond(second), third_cond(third), body(block) {}
+    ForStatement(ExprNode *first, ExprNode *second, ExprNode *third, Block *block) : first_cond(first), second_cond(second), third_cond(third), body(block) {
+    }
     void print(int deep = 0) const;
 };
 
@@ -352,19 +357,22 @@ public:
 class IfStatement : public Statement{
 private:
     ExprNode *condition;
-    ExprNode *if_branch;
-    ExprNode *else_branch;
+    Block *if_branch;
+    Block *else_branch;
 public:
-    IfStatement(ExprNode *cond, ExprNode *$if, ExprNode *$else = 0) : condition(cond), if_branch($if), else_branch($else) {}
+    IfStatement(ExprNode *cond, Block *$if, Block *$else = 0) : condition(cond), if_branch($if), else_branch($else) {
+
+    }
     void print(int deep = 0) const;
 };
 
 class WhileStatement : public Statement{
 private:
     ExprNode *condition;
-    ExprNode *body;
+    Block *body;
 public:
-    WhileStatement(ExprNode *c, ExprNode *b) : condition(c), body(b) {}
+    WhileStatement(ExprNode *c, Block *b) : condition(c), body(b) {
+    }
     void print(int deep = 0) const;
 
 };
@@ -372,9 +380,10 @@ public:
 class DoWhileStatement : public Statement{
 private:
     ExprNode *condition;
-    ExprNode *body;
+    Block *body;
 public:
-    DoWhileStatement(ExprNode *c, ExprNode *b) : condition(c), body(b) {}
+    DoWhileStatement(ExprNode *c, Block *b) : condition(c), body(b) {
+    }
     void print(int deep = 0) const;
 };
 

@@ -25,8 +25,9 @@ string OpNode :: opName() const{
 
 ExprNode *ExprNode :: makeTypeCoerce(ExprNode* expr, SymbolType *from, SymbolType *to){
     vector<SymbolType*> s;
+
     if(!from->canConvertTo(to))
-        throw MyException("Cannot perform conversion", expr->token);
+        throw MyException("Cannot perform conversion");
     if(from == to || *from == to)
         return expr;
     if (!dynamic_cast<ScalarSymbol*>(from) || !dynamic_cast<ScalarSymbol*>(to))
@@ -82,7 +83,13 @@ bool BinOpNode :: isModifiableLvalue() const{
 
 SymbolType *BinOpNode :: getType(){
     SymbolType *leftType = left->getType();
+    if (dynamic_cast<ArraySymbol*>(leftType)){
+        //leftType = leftType->;
+    }
     SymbolType *rightType = right->getType();
+    if (dynamic_cast<ArraySymbol*>(rightType)){
+        rightType = rightType->getType();
+    }
     string operation = token->Value;
     SymbolType *maxType = 0;
     if(operationTypeOperands.count(operation))
@@ -94,23 +101,29 @@ SymbolType *BinOpNode :: getType(){
     ArraySymbol *l_array = dynamic_cast<ArraySymbol*>(leftType);
     ArraySymbol *r_array = dynamic_cast<ArraySymbol*>(rightType);
 
-    if(isEqual(token))
-            if(!leftType->canConvertTo(IntType) || !rightType->canConvertTo(IntType))
+    if(isEqual(token)){
+            if(!leftType->canConvertTo(IntType) || !rightType->canConvertTo(IntType) ||
+                (((l_pointer|| l_array) && (rightType != IntType)) ||
+                ((r_pointer || r_array) && (leftType != IntType))) ||
+                ((l_array || l_pointer) && (r_array ||r_pointer)))
                 throw MyException("Expression must have integral type", token);
+        return IntType;
+    }
+
 
     if(isAssing(token)){
             if(!left->isModifiableLvalue())
                 throw MyException("Expression must be a modifiable lvalue", token);
-            right = makeTypeCoerce(right, rightType, leftType);
+            left = makeTypeCoerce(left,  leftType, rightType);
             return rightType;
     }
-    if (isEq(token, _SEPARATION, ".")) {
+    if (isEq(token, _OPERATION, ".")) {
 
             if(!dynamic_cast<StructSymbol*>(leftType))
                 throw MyException("Left operand of . must be a structure", token);
             return rightType;
     }
-    if (isEq(token, _SEPARATION, "->")) {
+    if (isEq(token, _OPERATION, "->")) {
         if(!l_pointer || !dynamic_cast<StructSymbol*>(l_pointer->upType()))
                 throw MyException("Left operand of -> must be of pointer-to-structure type");
         return rightType;
@@ -126,7 +139,7 @@ SymbolType *BinOpNode :: getType(){
     }
 
    if(isEq(token, _OPERATION, "+")) {
-            if((l_pointer && r_pointer) || (l_array && r_array))
+            if((l_pointer || l_array) && (r_pointer || r_array))
                 throw MyException("Can't add two pointers");
             if(l_pointer || r_pointer)
                 return l_pointer == 0 ? r_pointer : l_pointer;
@@ -134,6 +147,10 @@ SymbolType *BinOpNode :: getType(){
                 return new PointerSymbol(l_array == 0 ? r_array : l_array);
 
     }
+    if ( r_pointer|| l_pointer || l_array || r_array) 
+
+        throw MyException(" operation not for pointer",token);
+
 
                 if(leftType->isStruct() || rightType->isStruct())
                     throw MyException("Can't perform operation over two structures", token);
@@ -254,7 +271,7 @@ bool IdentifierNode :: isLvalue() const{
 bool IdentifierNode :: isModifiableLvalue() const{
     SymbolType *type = dynamic_cast<VarSymbol*>(var)->type;
     return !dynamic_cast<ConstSymbolType*>(type) && !dynamic_cast<FuncSymbol*>(type)
-    && !dynamic_cast<StructSymbol *>(type) && !dynamic_cast<ArraySymbol*>(type);
+    && !dynamic_cast<StructSymbol *>(type) ;
 }
 void IdentifierNode :: print(int deep) const{
     cout << string(deep * 2, ' ') << token->Value << endl;
@@ -279,7 +296,7 @@ bool ArrNode :: isModifiableLvalue() const{
 SymbolType *ArrNode :: getType(){
     ArraySymbol *sym = dynamic_cast<ArraySymbol*>(name->getType());
     if(!sym)
-        throw MyException("Expression must be a pointer type", token);
+        throw MyException("Expression must be a pointer type");
     SymbolType *type = sym;
     for(int i = 0; i < args.size(); i++){
         type = type->upType();

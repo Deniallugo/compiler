@@ -1,9 +1,0 @@
-void a ( int d);
-void a( int s){
-	int x = 0;
-}
-
-int main(){
-return 0;
-	
-}

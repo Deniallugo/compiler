@@ -1,4 +1,4 @@
-
+\
 
 //
 //  main.cpp
@@ -23,8 +23,9 @@ int main(int argc, char *argv[]){
     createKeyWords();
     createOperations();
     argc = 2;
-    argv[1] = "-pe";
-    argv[2] = "22.in";
+    argv[1] = "-pd";
+
+    argv[2] = "Expression/43.in";
     try{
         if(argc == 1)
             throw MyException("Running without parameters");
@@ -59,33 +60,26 @@ int main(int argc, char *argv[]){
             }
 
         }
-        if (!(strcmp(argv[1], "-f"))) {
+        if (!(strcmp(argv[1], "-pd"))){
             try{
                 ifstream *f = new ifstream;
                 f->open(argv[2], ios::in);
-                ofstream *g = new ofstream;
-                output = g;
-                g->open(get_out_addr(argv[2]), ios::out);
                 Scanner a(argv[2]);
+                Parser pars = *new Parser(a);
 
-                while (!a.isEnd()){
-                    a.Next();
-                    a.Get()->Print(g);
-                    a.Get()->Print();
-                }
-                g->close();
-                delete g;
+
+                pars.ParseProgram();
+                pars.print_declaration(0);
                 f->close();
                 delete f;
-
             }
             catch (MyException &e){
                 e.Print();
-                e.Print(output);
-                output->close();
             }
-            
         }
+
+
+
         else
             if (!(strcmp(argv[1], "-s"))){
                 try{
@@ -106,27 +100,27 @@ int main(int argc, char *argv[]){
             }
 
 
-    else
-        if (!(strcmp(argv[1], "-pe"))){
-            try{
-                ifstream *f = new ifstream;
-                f->open(argv[2], ios::in);
-                Scanner a(argv[2]);
-                Parser pars = *new Parser(a);
+            else
+                if (!(strcmp(argv[1], "-pe"))){
+                    try{
+                        ifstream *f = new ifstream;
+                        f->open(argv[2], ios::in);
+                        Scanner a(argv[2]);
+                        Parser pars = *new Parser(a);
 
 
-                pars.ParseProgram();
-                pars.print_declaration(0);
-                f->close();
-                delete f;
-            }
-            catch (MyException &e){
-                e.Print();
-            }
-        }
-
-}
-
+                        pars.ParseExpr()->print();
+                        pars.print_declaration(0);
+                        f->close();
+                        delete f;
+                    }
+                    catch (MyException &e){
+                        e.Print();
+                    }
+                }
+        
+    }
+    
     catch (MyException &e){
         e.Print();
         if (output){
@@ -134,6 +128,6 @@ int main(int argc, char *argv[]){
             output->close();
         }
     }
-
+    
     return 0;
 }

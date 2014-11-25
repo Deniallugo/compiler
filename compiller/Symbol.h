@@ -109,7 +109,8 @@ public:
 class ConstSymbolType : public SymbolType{
 public:
     SymbolType *symbol;
-    ConstSymbolType(SymbolType *symb, TYPES s_type = _VOID) : SymbolType("const_" + symb->name, s_type), symbol(symb) {}
+    ExprNode * init;
+    ConstSymbolType(SymbolType *symb, ExprNode *_init = nullptr, TYPES s_type = _VOID) : SymbolType("const_" + symb->name, s_type), symbol(symb),init(_init) {}
     string typeName() const;
     virtual bool isStruct() { return symbol->isStruct(); }
 };
@@ -152,6 +153,7 @@ public:
     SymTable *params;
     SymbolType *value;
     Block *body;
+    bool isConst;
     bool operator == (SymbolType *s) const;
     bool isFunc() const;
     bool operator != (SymbolType *s) const;

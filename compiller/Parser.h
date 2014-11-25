@@ -12,22 +12,22 @@
 #include "scanner.h"
 #include "Node.h"
 #include "Symbol.h"
-
+#include <stack>
 class Parser{
     Scanner &scan;
     int struct_counter;
     map <string, int> priorityTable;
     map <string, bool> right;
     map <string, bool> unary;
+    stack<Block*> blocks;
 
-    ExprNode * m_top;
     Symbol * symbolBuffer;
     FuncSymbol *parsingFunc;
+    bool isCanUseBreak;
     bool main_func;
     Block global_field;
     std::map<string, bool> assignmentOper, unaryOper;
     SymTableStack *symStack;
-     //Symbol * m_symbolBuffer;
 
     void errorIf(bool, string, Token * = NULL);
     void errorIf_sem(bool, string, Token * = NULL);
@@ -38,9 +38,9 @@ public:
     
     void parse();
     void ParseProgram();
-    ExprNode* ParseDeclaration();
+    ExprNode* ParseDeclaration(SymbolType* sym_type = nullptr);
     SymTable* ParseStructBlock();
-    bool CheckArgs(FuncSymbol* func1, FuncSymbol* func2);
+    bool CheckArgs(FuncSymbol* func1);
     ExprNode* ParseAssing();
     ExprNode* ParseCond();
     VarSymbol* ParseDirectDeclaration();
@@ -65,7 +65,7 @@ public:
     void ParseParam();
     VarSymbol *ParseIdentifier(SymbolType *type, bool param = false);
     SymbolType *ParseArrayDimension(SymbolType *type, bool param = false);
-    FuncSymbol* createFunction(const string &name, SymbolType *type);
+    FuncSymbol* createFunction(const string &name, SymbolType *type, bool ConstFun  = false);
     StructSymbol *ParseStruct(bool param = false);
     ForStatement* ParseFor();
     ExprNode *ParseStatement();
@@ -76,5 +76,6 @@ public:
     void CheckReturn(FuncSymbol* func);
     ExprNode* ParseExpr(int priority = 0 );
     Parser ( Scanner &_scan);
+    Statement* CycleStatement;
 
 };

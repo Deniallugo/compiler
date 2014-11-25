@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		837E16011A1187F30037FADF /* Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 837E16001A1187F30037FADF /* Parser.cpp */; };
 		83842D8F19FD068B0074C105 /* Symbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83842D8E19FD068B0074C105 /* Symbol.cpp */; };
+		838BEE891A22EEF400D5DE88 /* Parser_for_expression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 838BEE871A22EEF400D5DE88 /* Parser_for_expression.cpp */; };
 		838CA0CB19C9B7D2007A9FAE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 838CA0CA19C9B7D2007A9FAE /* main.cpp */; };
 		838CA0D319C9B7F1007A9FAE /* scanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 838CA0D119C9B7F1007A9FAE /* scanner.cpp */; };
 		83E9BBFF19E6A2E6004E9FD4 /* Token.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83E9BBFD19E6A2E6004E9FD4 /* Token.cpp */; };
@@ -34,6 +35,7 @@
 		8380BEFF19DE76930057B520 /* compiller.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = compiller.profdata; sourceTree = "<group>"; };
 		83842D8D19FD053C0074C105 /* Symbol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Symbol.h; sourceTree = "<group>"; };
 		83842D8E19FD068B0074C105 /* Symbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Symbol.cpp; sourceTree = "<group>"; };
+		838BEE871A22EEF400D5DE88 /* Parser_for_expression.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parser_for_expression.cpp; sourceTree = "<group>"; };
 		838CA0C719C9B7D2007A9FAE /* compiller */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = compiller; sourceTree = BUILT_PRODUCTS_DIR; };
 		838CA0CA19C9B7D2007A9FAE /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		838CA0D119C9B7F1007A9FAE /* scanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = scanner.cpp; sourceTree = "<group>"; usesTabs = 0; };
@@ -92,6 +94,7 @@
 				838CA0CA19C9B7D2007A9FAE /* main.cpp */,
 				837C8CE219DEC746003281CC /* Parser.h */,
 				837E16001A1187F30037FADF /* Parser.cpp */,
+				838BEE871A22EEF400D5DE88 /* Parser_for_expression.cpp */,
 				83E9BC0319E7554A004E9FD4 /* Node.cpp */,
 				83E9BC0419E7554A004E9FD4 /* Node.h */,
 				83842D8D19FD053C0074C105 /* Symbol.h */,
@@ -164,6 +167,7 @@
 				83E9BC0219E6A372004E9FD4 /* MyException.cpp in Sources */,
 				837E16011A1187F30037FADF /* Parser.cpp in Sources */,
 				83E9BC0519E7554A004E9FD4 /* Node.cpp in Sources */,
+				838BEE891A22EEF400D5DE88 /* Parser_for_expression.cpp in Sources */,
 				83842D8F19FD068B0074C105 /* Symbol.cpp in Sources */,
 				838CA0CB19C9B7D2007A9FAE /* main.cpp in Sources */,
 				83E9BBFF19E6A2E6004E9FD4 /* Token.cpp in Sources */,

@@ -109,8 +109,8 @@ bool ArraySymbol :: operator != (SymbolType *s) const{
 
 
 bool ArraySymbol :: canConvertTo(SymbolType *to){
-    if(*to == IntType)
-        return true;
+//    if(*to == IntType)
+//        return true;
     PointerSymbol *ptr = dynamic_cast<PointerSymbol*>(to);
     return ptr && (*ptr->pointer == type);
 }

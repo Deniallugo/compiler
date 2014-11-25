@@ -17,8 +17,10 @@ private:
     string massage;
 
 public:
-    MyException(const string &m, int l = -1, int c = -1) : line(l), col(c), massage(m) {}
+    MyException(const string &m, int l , int c ) : line(l), col(c), massage(m) {}
     MyException(const string &m, Token *token) : line(token->line), col(token->num), massage(m) {}
+    MyException(const string &m) : line(-1), col(-1), massage(m) {}
+
     void Print() const;
     void Print(ofstream *f) const;
 };
