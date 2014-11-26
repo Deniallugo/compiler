@@ -22,10 +22,10 @@ int main(int argc, char *argv[]){
     ofstream *output = 0;
     createKeyWords();
     createOperations();
-    argc = 2;
-    argv[1] = "-pd";
-
-    argv[2] = "Expression/43.in";
+//    argc = 2;
+//    argv[1] = "-pe";
+//
+//    argv[2] = "Expression/43.in";
     try{
         if(argc == 1)
             throw MyException("Running without parameters");

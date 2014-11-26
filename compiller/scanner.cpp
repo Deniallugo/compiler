@@ -83,6 +83,7 @@ bool Scanner::isOperation(char c){
     c == '|' ||
     c == '.' ||
     c == '^' ||
+    c == ',' ||
     c == ':' ||
     c == '?' ||
     c == '!';
@@ -96,7 +97,6 @@ bool  Scanner::isSeparation(char c){
             c == ')' ||
             c == '[' ||
             c == ']' ||
-            c == ',' ||
             c == ';'
             );
 }
@@ -185,6 +185,7 @@ void createOperations(){
     Operations["!="] = "non equal";
     Operations["->"] = "arrow";
     Operations["."] = "point";
+    Operations[","] = "coma";
 
 
 }
