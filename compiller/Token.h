@@ -18,6 +18,7 @@
 
 
 enum TYPES {
+    _TYPEDEF,
     _INTEGER,
     _FLOAT,
     _STRING,

@@ -10,7 +10,6 @@
 
 #include "scanner.h"
 #include "Parser.h"
-
 static string get_out_addr(const string& in){
     string out = in;
     out.erase(out.find('.') + 1);
@@ -23,10 +22,18 @@ int main(int argc, char *argv[]){
     createKeyWords();
     createOperations();
 //    argc = 2;
-//    argv[1] = "-pe";
+//    argv[1] = "-pd";
 //
-//    argv[2] = "Expression/43.in";
+//    argv[2] = "TypeChecking/173.in";
+//ERROR:Expression must have integral type	 line 4, column 4
+
+//  9  83 97 100 108 137 142  145 147 72
+//    приведение типов
+//    беда со 170
+//    и со 104 - 107
+    //
     try{
+
         if(argc == 1)
             throw MyException("Running without parameters");
         if (!(strcmp(argv[1], "-help"))){

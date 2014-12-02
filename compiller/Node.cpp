@@ -1,3 +1,4 @@
+
 #include "Node.h"
 #include <fstream>
 
@@ -23,9 +24,17 @@ string OpNode :: opName() const{
     return token->Value ;
 }
 
-ExprNode *ExprNode :: makeTypeCoerce(ExprNode* expr, SymbolType *from, SymbolType *to){
+ExprNode *ExprNode :: makeTypeCoerce(ExprNode* expr, SymbolType *from, SymbolType *to, Token* t){
     vector<SymbolType*> s;
+    ArraySymbol* ar = dynamic_cast<ArraySymbol*>(from);
 
+    if ( ar != nullptr){
+        if(!ar->canConvertTo(to,t)){
+            throw MyException("Cannot perform conversion");
+
+        }
+    }
+    else
     if(!from->canConvertTo(to))
         throw MyException("Cannot perform conversion");
     if(from == to || *from == to)
@@ -65,7 +74,7 @@ void BinOpNode :: print(ofstream *f, int deep){
 
 
 bool BinOpNode :: isLvalue() const{
-    if (isEq(token, _SEPARATION, ".") || isEq(token, _SEPARATION, "->"))
+    if (isEq(token, _OPERATION, ".") || isEq(token, _OPERATION, "->"))
              return right->isLvalue();
 
     else
@@ -76,20 +85,19 @@ bool BinOpNode :: isLvalue() const{
 bool BinOpNode :: isModifiableLvalue() const{
     if (isAssing(token) || isEqual(token))
         return left->isModifiableLvalue();
-    if (isEq(token, _SEPARATION, ".") || isEq(token, _SEPARATION, "->"))        return right->isModifiableLvalue();
+    if (isEq(token, _OPERATION, ".") || isEq(token, _OPERATION, "->"))        return right->isModifiableLvalue();
     else    return false;
 
 }
 
 SymbolType *BinOpNode :: getType(){
     SymbolType *leftType = left->getType();
-    if (dynamic_cast<ArraySymbol*>(leftType)){
-        //leftType = leftType->;
-    }
+    if ( dynamic_cast<TypedefSymbol*>(leftType))
+        leftType = leftType->getType();
+
     SymbolType *rightType = right->getType();
-    if (dynamic_cast<ArraySymbol*>(rightType)){
-        rightType = rightType->getType();
-    }
+    if ( dynamic_cast<TypedefSymbol*>(rightType))
+        leftType = rightType->getType();
     string operation = token->Value;
     SymbolType *maxType = 0;
     if(operationTypeOperands.count(operation))
@@ -100,22 +108,32 @@ SymbolType *BinOpNode :: getType(){
     PointerSymbol *r_pointer= dynamic_cast<PointerSymbol*>(rightType);
     ArraySymbol *l_array = dynamic_cast<ArraySymbol*>(leftType);
     ArraySymbol *r_array = dynamic_cast<ArraySymbol*>(rightType);
-
+    StructSymbol * l_struct =dynamic_cast<StructSymbol*>(leftType);
+    StructSymbol * r_struct = dynamic_cast<StructSymbol*>(rightType);
     if(isEqual(token)){
-            if(!leftType->canConvertTo(IntType) || !rightType->canConvertTo(IntType) ||
+
+        if(!leftType->canConvertTo(IntType) || !rightType->canConvertTo(IntType) ||
                 (((l_pointer|| l_array) && (rightType != IntType)) ||
-                ((r_pointer || r_array) && (leftType != IntType))) ||
-                ((l_array || l_pointer) && (r_array ||r_pointer)))
+                ((r_pointer || r_array) && (leftType != IntType))) )
                 throw MyException("Expression must have integral type", token);
         return IntType;
     }
 
 
     if(isAssing(token)){
+        if (l_struct && r_struct){
+            if(l_struct->getType() != r_struct->getType())
+                throw MyException("Struct  must have integral type",token);
+            return l_struct->getType();
+        }
+
+        if (!((l_array||l_pointer)&&(r_array||r_pointer))
+            || isEq(token, _OPERATION, "=")){
             if(!left->isModifiableLvalue())
                 throw MyException("Expression must be a modifiable lvalue", token);
-            left = makeTypeCoerce(left,  leftType, rightType);
+            left = makeTypeCoerce(left,  leftType, rightType,token);
             return rightType;
+        }
     }
     if (isEq(token, _OPERATION, ".")) {
 
@@ -128,29 +146,27 @@ SymbolType *BinOpNode :: getType(){
                 throw MyException("Left operand of -> must be of pointer-to-structure type");
         return rightType;
     }
-
-   if (isEq(token, _OPERATION, "-")) {
+    if (isEq(token, _OPERATION, "-")) {
         if((l_pointer && r_pointer) || (l_array && r_array)){
-                if( (l_pointer && r_pointer && (*l_pointer->pointer != r_pointer->pointer))
-                   || (l_array && r_array && (*l_array->type != r_array->type)))
-                    throw MyException("Operand types are incompatible", token);
-                return IntType;
-            }
+            if( (l_pointer && r_pointer && (*l_pointer->pointer != r_pointer->pointer))
+               || (l_array && r_array && (*l_array->type != r_array->type)))
+                throw MyException("Operand types are incompatible", token);
+            return IntType;
+        }
     }
 
-   if(isEq(token, _OPERATION, "+")) {
-            if((l_pointer || l_array) && (r_pointer || r_array))
-                throw MyException("Can't add two pointers");
-            if(l_pointer || r_pointer)
-                return l_pointer == 0 ? r_pointer : l_pointer;
-            if(l_array || r_array)
-                return new PointerSymbol(l_array == 0 ? r_array : l_array);
+    if(isEq(token, _OPERATION, "+")) {
+        if((l_pointer || l_array) && (r_pointer || r_array))
+            throw MyException("Can't add two pointers");
+        if(l_pointer || r_pointer)
+            return l_pointer == 0 ? r_pointer : l_pointer;
+        if(l_array || r_array)
+            return new PointerSymbol(l_array == 0 ? r_array : l_array);
 
     }
-    if ( r_pointer|| l_pointer || l_array || r_array) 
 
-        throw MyException(" operation not for pointer",token);
-
+       if ( r_pointer|| l_pointer || l_array || r_array)
+        throw MyException(" Operation not for pointer",token);
 
                 if(leftType->isStruct() || rightType->isStruct())
                     throw MyException("Can't perform operation over two structures", token);
@@ -193,7 +209,7 @@ static bool TypeLValue(const UnOpNode *n){
 
 bool UnOpNode :: isModifiableLvalue() const{
     string operation = token->Value;
-   return (operation == "!" || operation == "++" || operation == "--") && TypeLValue(this);
+   return (operation == "!" || operation == "++" ||operation == "*" || operation == "--") && TypeLValue(this);
 }
 
 
@@ -212,7 +228,8 @@ SymbolType *UnOpNode::getType(){
                 throw MyException("Expression must be a modifiable lvalue", token->line, token->num);
             return new PointerSymbol(type);
     }
-
+    if(isEq(token, _OPERATION, "*" ) && dynamic_cast<ArraySymbol*>(operand->getType()))
+        return new PointerSymbol(type->getType());
     if (isEq(token, _OPERATION, "^" ))
             operand = makeTypeCoerce(operand, type, IntType);
 
@@ -224,6 +241,7 @@ SymbolType *UnOpNode::getType(){
     if (isEq(token, _OPERATION,"++" ) || isEq(token, _OPERATION,"--" )){
 
             if(!operand->isModifiableLvalue())
+
                 throw MyException("Expression must be a modifiable lvalue", token);
     }
     if (isEq(token, _OPERATION,"-")){
@@ -295,9 +313,10 @@ bool ArrNode :: isModifiableLvalue() const{
 
 SymbolType *ArrNode :: getType(){
     ArraySymbol *sym = dynamic_cast<ArraySymbol*>(name->getType());
-    if(!sym)
+    PointerSymbol* sym1 = dynamic_cast<PointerSymbol*>(name->getType());
+    if(!sym && !sym1)
         throw MyException("Expression must be a pointer type");
-    SymbolType *type = sym;
+    SymbolType *type = sym ? (SymbolType*)sym:(SymbolType*)sym1;
     for(int i = 0; i < args.size(); i++){
         type = type->upType();
         if(type == 0)
@@ -404,23 +423,27 @@ void FunctionalNode :: print(int deep) const{
     cout << string(deep * 2, ' ') << ")" << endl;
 }
 
-CastNode :: CastNode(Token* op, ExprNode* oper, string ts) : UnOpNode(op, oper), type(ts) {}
+CastNode :: CastNode(Token* op, ExprNode* oper, SymbolType* ts) : UnOpNode(op, oper),type(ts) {}
 
-CastNode :: CastNode(Token *op, ExprNode *oper,  vector<SymbolType*> *ts) : UnOpNode(op, oper), s_type(ts) {}
+CastNode :: CastNode(Token *op, ExprNode *oper,  vector<SymbolType*> *ts) : UnOpNode(op, oper), s_type(ts) {
+    type = s_type->back();
+}
+
 
 SymbolType *CastNode :: getType(){
-    return s_type->back();
+        return type;
+
 }
 
 void CastNode :: print(int deep) const{
-    cout << string(deep * 2, ' ') << type;
+    cout << string(deep * 2, ' ') << type->typeName()<<endl;
     cout << string(deep * 2, ' ') << "(" << endl;
     operand->print(deep + 1);
     cout << string(deep * 2, ' ') << ")" << endl;
 }
 
 void CastNode :: print(ofstream *f, int deep) const{
-    *f << string(deep * 2, ' ') << type;
+    *f << string(deep * 2, ' ') << type->typeName();
     *f << string(deep * 2, ' ') << "(" << endl;
     operand->print(f, deep + 1);
     *f << string(deep * 2, ' ') << ")" << endl;

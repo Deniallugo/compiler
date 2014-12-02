@@ -70,10 +70,9 @@ public:
     virtual SymbolType* getType() { return 0; }
     virtual bool isLvalue() const { return false; }
     virtual bool isModifiableLvalue() const { return false; }
-    static ExprNode* makeTypeCoerce(ExprNode* expr, SymbolType *from, SymbolType *to);
+    static ExprNode* makeTypeCoerce(ExprNode* expr, SymbolType *from, SymbolType *to,  Token* t = nullptr);
     friend class ArrNode;
 };
-
 
 class OpNode : public ExprNode{
 protected:
@@ -204,11 +203,12 @@ public:
 
 class CastNode : public UnOpNode{
 private:
-    vector<SymbolType*> *s_type;
-    string type;
+   vector< SymbolType*> *s_type;
+    SymbolType* type;
+    
 public:
     CastNode(Token *op, ExprNode *oper, vector<SymbolType*> *ts);
-    CastNode(Token* op, ExprNode* oper, string ts);
+    CastNode(Token* op, ExprNode* oper, SymbolType* ts);
      SymbolType *getType();
     void print(int deep) const;
     void print(ofstream *f, int deep) const;

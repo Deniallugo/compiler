@@ -106,12 +106,25 @@ public:
     void initVal(ExprNode* val){value = val;}
 };
 
+class TypedefSymbol :public SymbolType{
+    SymbolType *type;
+public:
+    string typeName;
+    SymbolType *getType();
+
+    void print(int deep) const;
+    TypedefSymbol(SymbolType* _type, string name):SymbolType(name), type(_type), typeName(_type->name){}
+    
+
+};
+
 class ConstSymbolType : public SymbolType{
 public:
     SymbolType *symbol;
     ExprNode * init;
     ConstSymbolType(SymbolType *symb, ExprNode *_init = nullptr, TYPES s_type = _VOID) : SymbolType("const_" + symb->name, s_type), symbol(symb),init(_init) {}
     string typeName() const;
+    SymbolType* getType();
     virtual bool isStruct() { return symbol->isStruct(); }
 };
 
@@ -140,7 +153,7 @@ public:
     ArraySymbol(SymbolType *st, int sz, const string &name = "") : SymbolType("array"), size(sz), type(st) {}
     string typeName() const;
     SymbolType* upType() {return type; }
-    bool canConvertTo(SymbolType *to);
+    bool canConvertTo(SymbolType *to, Token* t = nullptr);
     bool operator == (SymbolType *s) const;
     bool operator != (SymbolType *s) const;
     void initType(SymbolType *t) { type = t; }

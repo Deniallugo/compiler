@@ -141,6 +141,7 @@ void createKeyWords(){
     keyWords["do"] = " kwDo";
   //  keyWords["double"] = " kwDouble";
     keyWords["else"] = " kwElse";
+
     keyWords["enum"] = "kwEnum";
     keyWords["false"] = " kwFalse";
     keyWords["float"] = "kwFloat";
@@ -346,7 +347,7 @@ bool Scanner::Next(){
                 buf = ch;
                 ErrorIf(ch == '.' ,"wrong number");
 
-                ErrorIf(!isSpace(ch) && !isSeparation(ch) && !f.eof(),  "wrong number");
+                //ErrorIf(!isSpace(ch)  && !f.eof(),  "wrong number");
                 col++;
                 t = new Token("float", _FLOAT, s, s, col, line);
                 f.eof() ? cas = END : success = true;
@@ -384,7 +385,14 @@ bool Scanner::Next(){
 
                 break;
             }
+            if ( s == "typedef"){
+                t = new Token(s,_TYPEDEF,s, keyWords[s], col, line);
+                buf = ch;
+                f.eof() ? cas = END : success = true;
 
+                break;
+
+            }
             if (keyWords.count(s)){
                 col++;
                 t = new Token("keyword", _KEYWORD, s, keyWords[s], col, line);

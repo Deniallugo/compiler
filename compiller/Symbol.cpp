@@ -64,6 +64,9 @@ bool ScalarSymbol :: isModifiableLvalue() const{
 string ConstSymbolType :: typeName() const{
     return "const " + symbol->typeName();
 }
+SymbolType* ConstSymbolType::getType(){
+    return symbol->getType();
+}
 
 extern void func_print(int, Block*);
 
@@ -108,10 +111,13 @@ bool ArraySymbol :: operator != (SymbolType *s) const{
 }
 
 
-bool ArraySymbol :: canConvertTo(SymbolType *to){
-//    if(*to == IntType)
-//        return true;
+bool ArraySymbol :: canConvertTo(SymbolType *to, Token* t){
+    if(*to == IntType)
+        return true;
     PointerSymbol *ptr = dynamic_cast<PointerSymbol*>(to);
+    if(t->Value != "="){
+        return false;
+    }
     return ptr && (*ptr->pointer == type);
 }
 
@@ -202,6 +208,7 @@ void SymTable :: print(int deep) const{
 }
 
 Symbol* SymTable :: find_symbol(const string &name) const{
+
     return index.count(name) == 1 ? sym_ptr[index.at(name)] : 0;
 }
 
@@ -280,7 +287,13 @@ void SymTableStack :: print(int deep) const{
         cout << line;
     }
 }
-
+SymbolType* TypedefSymbol::getType(){
+    return type;
+}
+void TypedefSymbol::print(int deep)const{
+    cout << "typedef " <<type->typeName() <<" with " << name<<"\n";
+    
+}
 Symbol* SymTableStack :: find_symbol(const string &name) const{
     Symbol* sym = 0;
     for (int i = tables.size() - 1; i >= 0 && !sym; i--)

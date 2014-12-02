@@ -24,7 +24,7 @@ class Parser{
     Symbol * symbolBuffer;
     FuncSymbol *parsingFunc;
     bool isCanUseBreak;
-    bool main_func;
+    FuncSymbol* main_func;
     Block global_field;
     std::map<string, bool> assignmentOper, unaryOper;
     SymTableStack *symStack;
