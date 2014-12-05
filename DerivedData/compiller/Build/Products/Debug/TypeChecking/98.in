@@ -1,0 +1,3 @@
+void main() {
+	char ch = ('a', 0.1);
+}

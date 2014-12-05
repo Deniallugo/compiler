@@ -1,0 +1,6 @@
+void func() {}
+
+void main() {
+	void * a;
+	&a = func();
+}

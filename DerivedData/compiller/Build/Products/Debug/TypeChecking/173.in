@@ -1,0 +1,7 @@
+struct type {
+	int i;
+} s;
+
+void main() {
+	(char*)s;
+}

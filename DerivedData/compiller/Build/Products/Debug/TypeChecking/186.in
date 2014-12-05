@@ -1,0 +1,5 @@
+struct {
+	int i;
+} s;
+
+int a[s.i];

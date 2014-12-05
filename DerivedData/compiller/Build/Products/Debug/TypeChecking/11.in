@@ -1,0 +1,10 @@
+struct type {
+	struct type1 {
+		int c;
+	} b;
+	
+} a;
+
+void main() {
+	a.b.c;
+}

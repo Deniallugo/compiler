@@ -1,0 +1,5 @@
+typedef char char1;
+
+int main(){
+	char1 as;
+}

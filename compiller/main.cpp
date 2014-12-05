@@ -24,14 +24,10 @@ int main(int argc, char *argv[]){
 //    argc = 2;
 //    argv[1] = "-pd";
 //
-//    argv[2] = "TypeChecking/173.in";
-//ERROR:Expression must have integral type	 line 4, column 4
-
-//  9  83 97 100 108 137 142  145 147 72
-//    приведение типов
-//    беда со 170
-//    и со 104 - 107
-    //
+//    argv[2] = "Statements/16.in";
+//40 41 42  59 -70 76
+    //100-110 ?
+    //142
     try{
 
         if(argc == 1)

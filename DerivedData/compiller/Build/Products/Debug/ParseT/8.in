@@ -1,0 +1,8 @@
+void w();
+int main(){
+int a; 
+
+w();
+int c;
+return 0;
+}

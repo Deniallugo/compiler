@@ -1,0 +1,11 @@
+int a( int b, int c){
+	return b;
+}
+int main(){
+
+	int b;
+	int c;
+
+	b = a(b,c);
+	return 0;
+}

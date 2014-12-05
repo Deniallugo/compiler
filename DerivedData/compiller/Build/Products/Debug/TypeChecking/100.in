@@ -1,0 +1,4 @@
+void main() {
+	char ch;
+	ch = 0.1, 'a';
+}

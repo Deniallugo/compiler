@@ -156,6 +156,9 @@ void createKeyWords(){
     keyWords["typename"] = "typename";
     keyWords["return"] = " kwReturn";
     keyWords["void"] = "kwVoid";
+    keyWords["printf"] = "printf";
+    keyWords["scanf"] = "scanf";
+
     keyWords["while"] = "kwWhile";
 
 

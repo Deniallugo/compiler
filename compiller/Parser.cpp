@@ -19,8 +19,8 @@ bool Parser::isBaseType( Token* t){
 
 void Parser::errorIf(bool isTrue, string error, Token* tk){
     if( isTrue){
-        if (tk != NULL) {
-            throw MyException(error);
+        if (tk == NULL) {
+            throw MyException(error, scan.Get());
         }
         throw MyException(error, tk);
     }
@@ -76,6 +76,7 @@ Parser :: Parser(Scanner &l) : scan(l), parsingFunc(0), struct_counter(0){
     typePriority[CharType] = 3;
     typePriority[IntType] = 2;
     typePriority[FloatType] = 1;
+    typePriority[VoidType] = 0;
 
     operationTypeOperands["%"] = IntType;
     operationTypeOperands["&"] = IntType;
@@ -84,7 +85,6 @@ Parser :: Parser(Scanner &l) : scan(l), parsingFunc(0), struct_counter(0){
     operationTypeOperands["~"] = IntType;
     operationTypeOperands[">>"] = IntType;
     operationTypeOperands["<<"] = IntType;
-
     operationReturningType["%"] = IntType;
     operationReturningType["&"] = IntType;
     operationReturningType["|"] = IntType;
@@ -101,6 +101,8 @@ Parser :: Parser(Scanner &l) : scan(l), parsingFunc(0), struct_counter(0){
     operationReturningType["<="] = IntType;
     operationReturningType[">"] = IntType;
     operationReturningType[">="] = IntType;
+
+
 
     SymTable* basic_def = new SymTable();
     basic_def->add_symbol(IntType);
@@ -448,7 +450,28 @@ ExprNode* Parser :: ParseFactor(){
         {
 
             string kw = token->Value;
-            if(kw == "char" || kw == "int" || kw == "float"){
+            if(kw == "printf" || kw == "scanf"){
+                errorIf( scan.GetNext()->Value != "(", "Open bracket expected", token);
+                scan.Next();
+                StringNode *format = dynamic_cast<StringNode*>(ParseExpr(priorityTable[","] + 1));
+                errorIf(!format, "Expected string format", token);
+                IONode *node = new IONode(dynamic_cast<Token*>(token), format);
+                if(scan.Get()->Value == ","){
+                    scan.Next();
+                    while(true){
+                        ExprNode *arg = ParseExpr(priorityTable[","] + 1);
+                        errorIf (!arg, "Argument expected", token);
+                        node->addArg(arg);
+                        if(scan.Get()->Value == ")")
+                            break;
+                        if(scan.Get()->Value == ",")
+                            scan.Next();
+                    }
+                }
+                scan.Next();
+                root = node;
+            }
+            else if(kw == "char" || kw == "int" || kw == "float"){
                // scan.Next();
                 SymbolType* type = ParseType();
                 errorIf(isEq(scan.Get(), _SEPARATION, "("), "Expected open bracket '('", token);
@@ -486,7 +509,7 @@ ExprNode* Parser :: ParseFactor(){
                 throw MyException("Wrong expression", token);
             break;
     }
-    if (!(token->Type == _OPERATION && unary[token->Value]))
+    if (!(token->Type == _OPERATION && unary[token->Value]) && token->Value != "printf" && token->Value != "scanf")
         scan.Next();
     root->getType();
     return root;
@@ -904,18 +927,59 @@ ExprNode* Parser :: ParseStatement(){
     if(token->Value == "if")
         return ParseIf();
     if(token->Value == "for"){
-        Statement = ParseFor();
+        if (isCanUseBreak){
+
+            CycleStatement = ParseFor();
+            Statement = CycleStatement;
+        }
+        else
+
+        {
+            isCanUseBreak = true;
+            CycleStatement = ParseFor();
+            Statement = CycleStatement;
+            isCanUseBreak = false;
+        }
         return Statement;
 
     }
     if(token->Value == "while"){
+        if (isCanUseBreak){
+            CycleStatement = ParseWhile();
+            Statement = CycleStatement;
+        }
+        else
 
-        Statement = ParseWhile();
+        {
+            isCanUseBreak = true;
+
+            CycleStatement = ParseWhile();
+            Statement = CycleStatement;
+            CycleStatement = nullptr;
+            isCanUseBreak = false;
+
+        }
+
         return Statement;
 
     }
     if(token->Value == "do"){
-        Statement = ParseDoWhile();
+        if (CycleStatement){
+            CycleStatement = ParseDoWhile();
+            Statement = CycleStatement;
+        }
+        else
+
+        {
+            isCanUseBreak = true;
+
+            CycleStatement = ParseDoWhile();
+            Statement = CycleStatement;
+            CycleStatement = nullptr;
+            isCanUseBreak = false;
+
+        }
+
         return Statement;
     }
     //    if(isEq(token, _SEPARATION, "("))
@@ -937,12 +1001,12 @@ Statement* Parser :: ParseJumpStatement(){
         scan.Next();
         return jump;
     }else if (scan.Get()->Value =="break"){
-        errorIf(!blocks.top()->isCanUseBreak, "You can't use break", scan.Get());
+        errorIf(!isCanUseBreak, "You can't use break", scan.Get());
         
         jump = new BreakStatement();
     }
     else  if(scan.Get()->Value =="continue"){
-        errorIf(!blocks.top()->isCanUseBreak, "You can't use continue",scan.Get());
+        errorIf(!isCanUseBreak, "You can't use continue",scan.Get());
         jump = new ContinueStatement();
     }
     

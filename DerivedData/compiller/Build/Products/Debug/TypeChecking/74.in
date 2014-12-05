@@ -1,0 +1,4 @@
+void main() {
+	float * d;
+	int * i = d;
+}

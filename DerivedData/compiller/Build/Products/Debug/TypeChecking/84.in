@@ -1,0 +1,7 @@
+struct {
+	int i;
+} s;
+
+void main() {
+	s += 1;
+}

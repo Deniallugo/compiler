@@ -1,0 +1,8 @@
+struct {
+	int i;
+} s;
+
+void main() {
+	int a;
+	1 ? s : s;
+}

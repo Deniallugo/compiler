@@ -1,0 +1,4 @@
+int a ( int a, int d , int v);
+int a ( int d, int w, int q){
+	return 0;
+}

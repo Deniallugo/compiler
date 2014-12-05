@@ -1,0 +1,5 @@
+typedef void void1;
+ 
+void main() {
+	void1 a;
+}

@@ -1,0 +1,4 @@
+void main() {
+	const char a;
+	a &= 1;
+}

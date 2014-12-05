@@ -305,6 +305,18 @@ public:
     void print(int deep = 0) const;
 };
 
+class StringNode;
+class IONode : public FunctionalNode{
+private:
+    Token *token;
+    StringNode *format;
+
+public:
+    friend class Parser;
+    IONode(Token *t, StringNode *n) : token(t), format(n), FunctionalNode(0, 0) {};
+    SymbolType *getType();
+    void print(int deep) const;
+};
 
 
 class IntNode : public ExprNode{

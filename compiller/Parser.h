@@ -77,5 +77,5 @@ public:
     ExprNode* ParseExpr(int priority = 0 );
     Parser ( Scanner &_scan);
     Statement* CycleStatement;
-
+    friend class MyException;
 };

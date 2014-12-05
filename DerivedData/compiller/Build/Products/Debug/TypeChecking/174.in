@@ -1,0 +1,8 @@
+typedef struct {
+	int i;
+} s;
+ 
+void main() {
+	s a;
+	a.i = 1;
+}

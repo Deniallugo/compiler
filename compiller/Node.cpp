@@ -1,4 +1,4 @@
-
+//
 #include "Node.h"
 #include <fstream>
 
@@ -35,8 +35,8 @@ ExprNode *ExprNode :: makeTypeCoerce(ExprNode* expr, SymbolType *from, SymbolTyp
         }
     }
     else
-    if(!from->canConvertTo(to))
-        throw MyException("Cannot perform conversion");
+        if(!from->canConvertTo(to))
+            throw MyException("Cannot perform conversion");
     if(from == to || *from == to)
         return expr;
     if (!dynamic_cast<ScalarSymbol*>(from) || !dynamic_cast<ScalarSymbol*>(to))
@@ -75,10 +75,10 @@ void BinOpNode :: print(ofstream *f, int deep){
 
 bool BinOpNode :: isLvalue() const{
     if (isEq(token, _OPERATION, ".") || isEq(token, _OPERATION, "->"))
-             return right->isLvalue();
+        return right->isLvalue();
 
     else
-            return isModifiableLvalue();
+        return isModifiableLvalue();
 }
 
 
@@ -110,40 +110,70 @@ SymbolType *BinOpNode :: getType(){
     ArraySymbol *r_array = dynamic_cast<ArraySymbol*>(rightType);
     StructSymbol * l_struct =dynamic_cast<StructSymbol*>(leftType);
     StructSymbol * r_struct = dynamic_cast<StructSymbol*>(rightType);
+    //FuncSymbol * fun = dynamic_cast<FuncSymbol*>(right);
     if(isEqual(token)){
 
-        if(!leftType->canConvertTo(IntType) || !rightType->canConvertTo(IntType) ||
-                (((l_pointer|| l_array) && (rightType != IntType)) ||
-                ((r_pointer || r_array) && (leftType != IntType))) )
+        if(l_struct && r_struct){
+            if ((l_struct->getType() != r_struct->getType()))
                 throw MyException("Expression must have integral type", token);
+            else return IntType;
+        }
+        if(l_pointer && r_pointer){
+            if(l_pointer->getType() != r_pointer->getType())
+               throw MyException("Expression must have integral type", token);
+            else return IntType;
+
+        }
+        if(
+           ((l_pointer|| l_array) && (rightType != IntType)) ||
+            ((r_pointer || r_array) && (leftType != IntType))
+           //||!leftType->canConvertTo(IntType) || !rightType->canConvertTo(IntType)
+
+
+           )
+            throw MyException("Expression must have integral type", token);
+        
+
         return IntType;
+
     }
 
 
     if(isAssing(token)){
+
         if (l_struct && r_struct){
+            if(!isEq(token, _OPERATION, "="))
+                throw MyException("Can't perform operation over two  structures",token);
+
+
             if(l_struct->getType() != r_struct->getType())
                 throw MyException("Struct  must have integral type",token);
             return l_struct->getType();
         }
-
-        if (!((l_array||l_pointer)&&(r_array||r_pointer))
-            || isEq(token, _OPERATION, "=")){
-            if(!left->isModifiableLvalue())
-                throw MyException("Expression must be a modifiable lvalue", token);
+        if(!left->isModifiableLvalue())
+            throw MyException("Expression must be a modifiable lvalue", token);
+        if (((l_array||l_pointer)&&(r_array||r_pointer))
+            && (isEq(token, _OPERATION, "=")||((isEq(token, _OPERATION, "-="))))){
             left = makeTypeCoerce(left,  leftType, rightType,token);
             return rightType;
         }
+        if((l_pointer && rightType->canConvertTo(IntType)) &&!isEq(token, _OPERATION, "="))
+            return l_pointer == 0 ? r_pointer : l_pointer;
+
+        if(l_array  && rightType->canConvertTo(IntType) &&!isEq(token, _OPERATION, "=") )
+            return new PointerSymbol(l_array == 0 ? r_array : l_array);
+
+
     }
     if (isEq(token, _OPERATION, ".")) {
 
-            if(!dynamic_cast<StructSymbol*>(leftType))
-                throw MyException("Left operand of . must be a structure", token);
-            return rightType;
+        //            if(!dynamic_cast<StructSymbol*>(leftType))
+        //                throw MyException("Left operand of . must be a structure", token);
+        return rightType;
     }
     if (isEq(token, _OPERATION, "->")) {
         if(!l_pointer || !dynamic_cast<StructSymbol*>(l_pointer->upType()))
-                throw MyException("Left operand of -> must be of pointer-to-structure type");
+            throw MyException("Left operand of -> must be of pointer-to-structure type");
         return rightType;
     }
     if (isEq(token, _OPERATION, "-")) {
@@ -153,34 +183,43 @@ SymbolType *BinOpNode :: getType(){
                 throw MyException("Operand types are incompatible", token);
             return IntType;
         }
+        if((l_pointer && rightType->canConvertTo(IntType)))
+            return l_pointer == 0 ? r_pointer : l_pointer;
+
+        if(l_array  && rightType->canConvertTo(IntType) )
+            return new PointerSymbol(l_array == 0 ? r_array : l_array);
+
+
+
     }
 
     if(isEq(token, _OPERATION, "+")) {
         if((l_pointer || l_array) && (r_pointer || r_array))
             throw MyException("Can't add two pointers");
-        if(l_pointer || r_pointer)
+        if((l_pointer && rightType->canConvertTo(IntType)))
             return l_pointer == 0 ? r_pointer : l_pointer;
-        if(l_array || r_array)
+
+        if(l_array  && rightType->canConvertTo(IntType) )
             return new PointerSymbol(l_array == 0 ? r_array : l_array);
+
 
     }
 
-       if ( r_pointer|| l_pointer || l_array || r_array)
+
+    if ( r_pointer|| l_pointer || l_array || r_array)
         throw MyException(" Operation not for pointer",token);
 
-                if(leftType->isStruct() || rightType->isStruct())
-                    throw MyException("Can't perform operation over two structures", token);
-                if(typePriority[maxType] < max(typePriority[leftType], typePriority[rightType]))
-                throw MyException("Invalid type of operands", token);
-                left = makeTypeCoerce(left, leftType, maxType);
-                right = makeTypeCoerce(right, rightType, maxType);
-                if (operationReturningType.count(operation))
-                    return operationReturningType[operation];
-                else
-                    return maxType;
 
-
-
+    if(leftType->isStruct() || rightType->isStruct())
+        throw MyException("Can't perform operation with  structures", token);
+    if(typePriority[maxType] > max(typePriority[leftType], typePriority[rightType]))
+        throw MyException("Invalid type of operands", token);
+    left = makeTypeCoerce(left, leftType, maxType);
+    right = makeTypeCoerce(right, rightType, maxType);
+    if (operationReturningType.count(operation))
+        return operationReturningType[operation];
+    else
+        return maxType;
 
 }
 
@@ -209,7 +248,7 @@ static bool TypeLValue(const UnOpNode *n){
 
 bool UnOpNode :: isModifiableLvalue() const{
     string operation = token->Value;
-   return (operation == "!" || operation == "++" ||operation == "*" || operation == "--") && TypeLValue(this);
+    return (operation == "!" || operation == "++" ||operation == "*" || operation == "--") && TypeLValue(this);
 }
 
 
@@ -219,34 +258,39 @@ SymbolType *UnOpNode::getType(){
 
     if (isEq(token, _OPERATION,"!" )){//factor
         if(!dynamic_cast<PointerSymbol*>(type))
-                throw MyException("Type of unary operation is not a pointer", token);
+            throw MyException("Type of unary operation is not a pointer", token);
 
-            return dynamic_cast<PointerSymbol*>(type)->pointer;
+        return dynamic_cast<PointerSymbol*>(type)->pointer;
     }
     if (isEq(token, _OPERATION, "&" )){
-            if(!operand->isLvalue())
-                throw MyException("Expression must be a modifiable lvalue", token->line, token->num);
-            return new PointerSymbol(type);
+        if(!operand->isLvalue())
+            throw MyException("Expression must be a modifiable lvalue", token->line, token->num);
+        return new PointerSymbol(type);
     }
-    if(isEq(token, _OPERATION, "*" ) && dynamic_cast<ArraySymbol*>(operand->getType()))
+    if(isEq(token, _OPERATION, "*" )){
+       if( dynamic_cast<ArraySymbol*>(operand->getType()))
         return new PointerSymbol(type->getType());
+        else
+            throw MyException("Operand is not a pointer", token);
+
+    }
     if (isEq(token, _OPERATION, "^" ))
-            operand = makeTypeCoerce(operand, type, IntType);
+        operand = makeTypeCoerce(operand, type, IntType);
 
     if (isEq(token, _OPERATION,"!" )){
-            if(dynamic_cast<StructSymbol*>(type))
-                throw MyException("No operator \"!\" matches these operands operand types are: !" + type->name, token);
+        if(dynamic_cast<StructSymbol*>(type))
+            throw MyException("No operator \"!\" matches these operands operand types are: !" + type->name, token);
     }
 
     if (isEq(token, _OPERATION,"++" ) || isEq(token, _OPERATION,"--" )){
 
-            if(!operand->isModifiableLvalue())
+        if(!operand->isModifiableLvalue())
 
-                throw MyException("Expression must be a modifiable lvalue", token);
+            throw MyException("Expression must be a modifiable lvalue", token);
     }
     if (isEq(token, _OPERATION,"-")){
-         if(!type->canConvertTo(FloatType))
-                throw MyException("Expression must have arithmetical type", token);
+        if(!type->canConvertTo(FloatType))
+            throw MyException("Expression must have arithmetical type", token);
     }
 
     return type;
@@ -274,7 +318,7 @@ void PostfixUnaryOpNode :: print(ofstream *f, int deep) const{
     *f << string(deep * 2, ' ') << opName() << endl;
 }
 
- IdentifierNode :: IdentifierNode(Token *t, VarSymbol *v) : ExprNode(t), var(v) {}
+IdentifierNode :: IdentifierNode(Token *t, VarSymbol *v) : ExprNode(t), var(v) {}
 
 IdentifierNode :: IdentifierNode(const string & name, int line, int col) : ExprNode(new Token("identifer", _IDENTIFIER, name, "identifier :" + name, col, line)) {}
 
@@ -397,7 +441,8 @@ SymbolType* FunctionalNode :: getType(){
         args[i] = makeTypeCoerce(args[i], realType, formalType);
     }
 
-    return symbol->getType();
+//    return symbol->getType();
+    return symbol;
 }
 
 void FunctionalNode :: printArgs(ofstream *f, int deep) const{
@@ -431,7 +476,7 @@ CastNode :: CastNode(Token *op, ExprNode *oper,  vector<SymbolType*> *ts) : UnOp
 
 
 SymbolType *CastNode :: getType(){
-        return type;
+    return type;
 
 }
 
@@ -456,10 +501,10 @@ void Block :: print(int deep) const{
         cout << tab << "Statements:" << endl;
     for(int i = 0; i < body.size(); i++)
         body[i]->print(deep + 1);
-    
+
     if(table->sym_ptr.size()){
         cout << tab << "Symbols Table:" << endl;
-        table->print(deep + 1);		
+        table->print(deep + 1);
     }
     if(!table->sym_ptr.size() && !body.size())
         cout << tab << "<< block is empty >>" << endl;
@@ -607,6 +652,25 @@ void StringNode :: print(int deep) const{
 void StringNode :: print(ofstream *f, int deep) const{
     *f << string(deep * 2, ' ') << '"' << token->Value << '"' << endl;
 }
+
+SymbolType* IONode::getType(){
+    return 0;
+}
+
+void IONode::print(int deep) const {
+
+    string tab(deep * 2, ' ');
+    cout << tab << token->Value << "(" << endl;
+    format->print(deep + 1);
+    if (args.size() > 0)
+    {
+        cout << tab << ',' << endl;
+        printArgs(deep + 1);
+    }
+    cout << tab << ")" << endl;
+}
+
+
 
 
 

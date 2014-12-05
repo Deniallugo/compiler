@@ -1,0 +1,6 @@
+typedef char char1;
+ 
+void main() {
+	char1 a;
+	*a;
+}

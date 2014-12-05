@@ -1,0 +1,8 @@
+struct type {
+	int b;
+} * a;
+
+void main() {
+	int g;
+	a->b;
+}

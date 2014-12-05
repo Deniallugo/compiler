@@ -1,0 +1,2 @@
+struct type {int a;};
+struct type b;

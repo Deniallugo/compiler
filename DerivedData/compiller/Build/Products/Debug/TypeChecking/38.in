@@ -1,0 +1,7 @@
+struct type {
+	int a;
+} b;
+
+void main() {
+	b / 2;
+}

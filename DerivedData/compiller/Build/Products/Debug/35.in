@@ -1,0 +1,6 @@
+struct a{
+	int s;
+} *we;
+int main(){
+	we.s;
+}

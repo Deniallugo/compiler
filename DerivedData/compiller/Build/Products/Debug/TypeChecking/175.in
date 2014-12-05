@@ -1,0 +1,5 @@
+typedef int * pointer;
+ 
+void main() {
+	pointer a = 1;
+}

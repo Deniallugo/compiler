@@ -50,7 +50,7 @@ SymbolType::SymbolType(Token* tok){
 }
 
 bool ScalarSymbol :: canConvertTo(SymbolType *to){
-    if(dynamic_cast<PointerSymbol*>(to) || dynamic_cast<FuncSymbol*>(to))
+    if(dynamic_cast<PointerSymbol*>(to) || dynamic_cast<FuncSymbol*>(to)  )
         return false;
     int a = typePriority[this];
     int b = typePriority[to];
@@ -87,7 +87,7 @@ SymbolType* FuncSymbol :: getType(){
 }
 
 bool FuncSymbol :: canConvertTo(SymbolType* to){
-    return *this == to;
+    return this->getType() == to;
 }
 
 string ArraySymbol :: typeName() const{
@@ -112,13 +112,17 @@ bool ArraySymbol :: operator != (SymbolType *s) const{
 
 
 bool ArraySymbol :: canConvertTo(SymbolType *to, Token* t){
-    if(*to == IntType)
-        return true;
-    PointerSymbol *ptr = dynamic_cast<PointerSymbol*>(to);
-    if(t->Value != "="){
-        return false;
-    }
-    return ptr && (*ptr->pointer == type);
+//    if(*to == IntType)
+//        return true;
+//    PointerSymbol *ptr = dynamic_cast<PointerSymbol*>(to);
+//    if(t->Value != "="){
+//        return false;
+//    }
+    PointerSymbol *pointer = dynamic_cast<PointerSymbol*>(to);
+    if(pointer)
+        return (this->getType()->canConvertTo(pointer->getType()));
+    return false;
+//    return ptr && (*ptr->pointer == type);
 }
 
 
@@ -160,8 +164,8 @@ bool PointerSymbol :: operator == (SymbolType *s) const{
 }
 
 bool PointerSymbol :: canConvertTo(SymbolType *to){
-    if(*to == IntType)
-        return true;
+//    if(*to == IntType)
+//        return true;
     PointerSymbol *pointer = dynamic_cast<PointerSymbol*>(to);
     if(pointer)
         return *this == pointer;
