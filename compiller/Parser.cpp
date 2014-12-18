@@ -988,6 +988,9 @@ ExprNode* Parser :: ParseStatement(){
         return ParseJumpStatement();
     else
         return ParseExpr();
+    int *a  ;
+     int s = a - a;
+    s++;
 
 
 }

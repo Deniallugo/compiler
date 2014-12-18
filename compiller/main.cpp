@@ -25,9 +25,7 @@ int main(int argc, char *argv[]){
 //    argv[1] = "-pd";
 //
 //    argv[2] = "Statements/16.in";
-//40 41 42  59 -70 76
-    //100-110 ?
-    //142
+
     try{
 
         if(argc == 1)
