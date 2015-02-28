@@ -24,6 +24,34 @@ string SymbolType :: typeName() const{
 }
 
 
+int PointerSymbol::byteSize() const {
+	return 4;
+}
+int StructSymbol::byteSize() const {
+	return m_fields ? m_fields->byteSize() : 0;
+}
+int SymTable::byteSize() const {
+	int b = 0;
+	for (int i = 0; i < size(); i++)
+		b += sym_ptr[i]->byteSize();
+	return b;
+}
+int ArraySymbol::byteSize() const {
+	return type->byteSize() * size;
+}
+
+int ScalarSymbol::byteSize() const {
+	if (name == "void")
+		return 0;
+	if (name == "char")
+		return 1;
+	if (name == "int" || name == "float")
+		return 4;
+	throw MyException("Unknown basic type");
+}
+int VarSymbol::byteSize() const {
+	return type->byteSize();
+}
 extern void print_node(int, ExprNode*);
 
 SymbolType* VarSymbol :: getType(){
@@ -85,6 +113,9 @@ void FuncSymbol:: print(int deep) const{
 SymbolType* FuncSymbol :: getType(){
     return value;
 }
+
+
+
 
 bool FuncSymbol :: canConvertTo(SymbolType* to){
     return this->getType() == to;
@@ -164,11 +195,11 @@ bool PointerSymbol :: operator == (SymbolType *s) const{
 }
 
 bool PointerSymbol :: canConvertTo(SymbolType *to){
-//    if(*to == IntType)
-//        return true;
+    if(*to == IntType)
+        return true;
     PointerSymbol *pointer = dynamic_cast<PointerSymbol*>(to);
     if(pointer)
-        return *this == pointer;
+        return true;
     return false;
 }
 
@@ -242,6 +273,25 @@ void SymTable :: add_symbol(Symbol *s){
     name.push_back(s->name);
     sym_ptr.push_back(s);
     index[s->name] = name.size() - 1;
+	
+	if (VarSymbol *var = dynamic_cast<VarSymbol*>(s)){
+		SymbolType* type = var->getType();
+		if (dynamic_cast<ArraySymbol*>(type))
+			s->offset = -(offset +
+			type->byteSize()
+			- type->upType()->byteSize());
+		else
+			s->offset = -offset
+			 +index[s->name] * s->byteSize()
+			;
+		s->offset -= s->byteSize();
+	//	if (sym_ptr.size() == 1){
+		//	var->global = true;
+		//}
+		//else
+			//var->global = false;
+	}
+	
 }
 
 bool SymTable :: isExist(const string &name) const{

@@ -176,14 +176,14 @@ void createOperations(){
     Operations["=="] = "equal";
     Operations["<="] = "less or equal";
     Operations[">="] = "more or equal";
-    Operations["+="] = "plus and assign";
-    Operations["-="] = "minus and assign";
+    Operations["+="] = "plus and Assing";
+    Operations["-="] = "minus and Assing";
     Operations["&&"] = "logical and";
     Operations["||"] = "logical or";
     Operations["&"] = "byte and";
     Operations["|"] = "byte or";
-    Operations["*="] = "mul and assign";
-    Operations["/="] = "div and assign";
+    Operations["*="] = "mul and Assing";
+    Operations["/="] = "div and Assing";
     Operations["!"] = "logical not";
     Operations["~"] = "byte not";
     Operations["!="] = "non equal";
@@ -200,14 +200,20 @@ Token* Scanner::Get(){
 
 Scanner::Scanner(string s){
 
-    f.open(s);
+    f.open(s, ios::in);
+	
     open = s;
-
+	col = 0, line = 1;
+	 buf = '#';
 }
+
+
+
 Scanner::Scanner(Scanner const &scan){
     open = scan.open;
-    f.open(open);
-
+    f.open(open, ios::in);
+	col = 0, line = 1;
+	 buf = '#';
 }
 
 bool Scanner::Next(){
@@ -444,7 +450,9 @@ bool Scanner::Next(){
 
             s += ch;
             if (!f.eof()){
-                if (isOperation(buf) && ch != '*'){
+                if (isOperation(buf)
+					//&& ch != '*'
+					){
                     s += buf;
                     f.get(buf);
                 }
@@ -475,8 +483,8 @@ bool Scanner::Next(){
                 col++;
             }
 
-            f.get(buf);
-            t = new Token("string", _STRING, "\"" + s + "\"", s, col, line);
+          //  f.get(buf);
+            t = new Token("string", _STRING,   s , s, col, line);
             f.eof() ? cas = END : success = true;
             break;
 

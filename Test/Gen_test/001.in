@@ -1,0 +1,6 @@
+char * str;
+
+int main() {
+	str = "Hello world";
+	printf("%s", str);
+}

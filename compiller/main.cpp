@@ -16,18 +16,32 @@ static string get_out_addr(const string& in){
     out += "out";
     return out;
 }
+static string BaseName(string in){
+    return in.erase(in.find('.'));
+}
+
+
+
+void compile(string file){
+	string filename = file.substr(0, file.size() - 3);
+
+	string path = "C:\\masm32\\bin\\buildc " + filename;
+
+	system(path.c_str());
+	system(string(filename+".exe").c_str());
+}
+
 
 int main(int argc, char *argv[]){
     ofstream *output = 0;
     createKeyWords();
     createOperations();
-//    argc = 2;
-//    argv[1] = "-pd";
-//
-//    argv[2] = "Statements/16.in";
-//40 41 42  59 -70 76
-    //100-110 ?
-    //142
+  //  argc = 2;
+//	argv[1] = "-gen";
+	
+ 
+//	argv[2] = "Gen_test\\036.in";
+
     try{
 
         if(argc == 1)
@@ -40,8 +54,8 @@ int main(int argc, char *argv[]){
         }
         if (!(strcmp(argv[1], "-t"))) {
             try{
-                ifstream *f = new ifstream;
-                f->open(argv[2], ios::in);
+                ifstream f ;
+                f.open(argv[2], ios::in);
                 ofstream *g = new ofstream;
                 output = g;
                 g->open(get_out_addr(argv[2]), ios::out);
@@ -53,8 +67,8 @@ int main(int argc, char *argv[]){
                 }
                 g->close();
                 delete g;
-                f->close();
-                delete f;
+               // f->close();
+//                delete f;
 
             }
             catch (MyException &e){
@@ -68,11 +82,12 @@ int main(int argc, char *argv[]){
                 ifstream *f = new ifstream;
                 f->open(argv[2], ios::in);
                 Scanner a(argv[2]);
-                Parser pars = *new Parser(a);
+                Generator g = *new Generator("");
+                Parser pars = *new Parser(a,g);
 
 
                 pars.ParseProgram();
-                pars.print_declaration(0);
+                pars.print();
                 f->close();
                 delete f;
             }
@@ -82,8 +97,21 @@ int main(int argc, char *argv[]){
         }
 
 
+        if(!strcmp(argv[1], "-gen")){
+            ifstream *f = new ifstream(argv[2], ios::in);
+            Scanner scan(argv[2]);
+            string name(BaseName(argv[2]));
+            Parser parser(scan, *new Generator(name + string(".asm")));
 
-        else
+            parser.ParseProgram();
+           parser.print();
+            parser.GenerateCode();
+            string path(argv[0]);
+            path = path.substr(0, path.rfind("\\") + 1) + "..\\";
+            parser.generator.generate();
+			compile(argv[2]);
+
+         } else
             if (!(strcmp(argv[1], "-s"))){
                 try{
                     ifstream *f = new ifstream;
@@ -109,7 +137,8 @@ int main(int argc, char *argv[]){
                         ifstream *f = new ifstream;
                         f->open(argv[2], ios::in);
                         Scanner a(argv[2]);
-                        Parser pars = *new Parser(a);
+                        Generator g = *new Generator("");
+                        Parser pars = *new Parser(a,g);
 
 
                         pars.ParseExpr()->print();
@@ -131,6 +160,11 @@ int main(int argc, char *argv[]){
             output->close();
         }
     }
-    
-    return 0;
+
+	
+
+	//system("pause");
+	return 0;
+	
 }
+

@@ -28,9 +28,9 @@ private:
     
     ifstream f;
     Token* t;
-    char buf = '#';
+    char buf ;
     bool end_of_file, last_token;
-    int col = 0, line = 1;
+    int col , line ;
     string open;
 public:
     static bool isSeparation(char c);

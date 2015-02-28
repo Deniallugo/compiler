@@ -198,10 +198,10 @@
 //        if(isEq(scan.Get(), _OPERATION, "=")){
 //            Token *asgn = scan.Get();
 //            scan.Next();
-//            ExprNode* assign_operand = ParseExpr(priorityTable[","] + 1);
+//            ExprNode* Assing_operand = ParseExpr(priorityTable[","] + 1);
 //
-//            //   parsingFunc->body->AddStatement(assign)
-//            node = new BinOpNode(asgn, new IdentifierNode(token, var), assign_operand);
+//            //   parsingFunc->body->AddStatement(Assing)
+//            node = new BinOpNode(asgn, new IdentifierNode(token, var), Assing_operand);
 //            if ( var->getType() == node->getType())
 //                var->init = node;
 //            blocks.top()->AddStatement(node);

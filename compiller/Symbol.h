@@ -4,8 +4,7 @@
 #include <string>
 #include <vector>
 #include <stdlib.h>
-using namespace std;
-
+#include "AsmCode.h"
 
 enum S_types{
     t_Int,
@@ -20,9 +19,11 @@ class SymbolType;
 
 class Symbol{
 public:
+    int offset;
     string name;
     Symbol(){}
-    Symbol(string n) { name = n; }
+    Symbol(string n, int i = 0  ): name(n), offset(i){}
+	virtual int byteSize() const{ return 0; }
     virtual SymbolType *getType() { return 0; }
     virtual bool isFunc() const { return false; }
     virtual void print(int deep) const;
@@ -48,9 +49,11 @@ public:
 
 class ScalarSymbol: public SymbolType{
 public:
+	int intValue;
     ScalarSymbol(const string &name, TYPES t = _VOID) : SymbolType(name,t) {}
     bool canConvertTo(SymbolType* to);
     bool isModifiableLvalue() const;
+     virtual int byteSize() const;
 };
 
 class Block;
@@ -60,9 +63,12 @@ public:
     vector<string> name;
     vector<Symbol*> sym_ptr;
     map <string, int> index;
+    virtual int byteSize() const;
     SymTable() : name(0), sym_ptr(0) {}
     void print(int deep = 0) const;
     bool isExist(const string &name) const;
+    void generateGlobals(AsmCode &code) const ;
+    void generateCode(AsmCode &code) const ;
     void add_symbol(Symbol *s);
     bool exists(const string &name) const;;
     void push(SymTable *t);
@@ -99,7 +105,10 @@ class VarSymbol : public SymbolType{
 public:
     ExprNode *init;
     SymbolType *type;
+     virtual int byteSize() const;
     SymbolType *getType();
+    bool global;
+    void generate(AsmCode &code) const;
     VarSymbol(string str, SymbolType *tp, ExprNode *i = 0);
     void print(int deep) const;
     void initType(SymbolType *t) { type = t; }
@@ -134,8 +143,10 @@ public:
     SymTable* m_fields;
 
     StructSymbol(SymTable *st, string name) : SymbolType(name, _STRUCT), m_fields(st) {}
-
+    virtual int byteSize() const;
     void print(int deep) const;
+    void generateGlobals(AsmCode &code) const;
+    void generateCode(AsmCode &code) const;
     string typeName() const;
     virtual bool isStruct() { return true; }
     bool canConvertTo(SymbolType* to);
@@ -151,10 +162,13 @@ public:
     int size;
     SymbolType* type;
     ArraySymbol(SymbolType *st, int sz, const string &name = "") : SymbolType("array"), size(sz), type(st) {}
+	ArraySymbol(ArraySymbol* ar) : SymbolType("array"), size(ar->size), type(ar->type) {}
+
     string typeName() const;
     SymbolType* upType() {return type; }
     bool canConvertTo(SymbolType *to, Token* t = nullptr);
     bool operator == (SymbolType *s) const;
+     virtual int byteSize() const;
     bool operator != (SymbolType *s) const;
     void initType(SymbolType *t) { type = t; }
 };
@@ -165,6 +179,7 @@ class FuncSymbol : public SymbolType{
 public:
     SymTable *params;
     SymbolType *value;
+    AsmLabelArg *endLabel;
     Block *body;
     bool isConst;
     bool operator == (SymbolType *s) const;
@@ -172,7 +187,8 @@ public:
     bool operator != (SymbolType *s) const;
     void print(int deep) const;
     SymbolType *getType();
-    FuncSymbol(const string &name, SymbolType *val, Block *block = 0) : SymbolType(name), value(val), body(block), params(0) {}
+    void generate(AsmCode &code,const string& name)const;
+    FuncSymbol(const string &name, SymbolType *val, Block *block = 0) : SymbolType(name), value(val), body(block),endLabel(0) ,params(0) {}
     bool canConvertTo(SymbolType* to);
     void initType(SymbolType *t) {value = t; }
 };
@@ -187,6 +203,7 @@ public:
     bool isModifiableLvalue() const;
     bool operator == (SymbolType *t) const;
     bool operator != (SymbolType *t) const;
+     virtual int byteSize() const;
     void initType(SymbolType *t) { pointer = t; }
 };
 

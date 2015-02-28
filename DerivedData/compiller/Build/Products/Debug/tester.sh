@@ -38,27 +38,29 @@
 #done
 #open Expression/outfile.out;
 
-#echo  >TypeChecking/outfile.out
-#
-#for ((a=1; a <= 180 ; a++))
-#do
-#echo Test $a
-#echo $a " Test" >> TypeChecking/outfile.out
-#cat TypeChecking/$a.in >> TypeChecking/outfile.out
-#echo  "\n\n"out File>> TypeChecking/outfile.out
-##./compiller -pd TypeChecking/$a.in >> TypeChecking/outfile.out
-#./compiller -pd TypeChecking/$a.in > TypeChecking/$a.out
-#echo  "\n" >> TypeChecking/outfile.out
-#if diff TypeChecking/$a.out TypeChecking/$a.exm
-#then    echo OK
-#cat TypeChecking/$a.out >> TypeChecking/outfile.out
-#else    echo bad
-#open TypeChecking/$a.exm
-#open TypeChecking/$a.in
+echo  >TypeChecking/outfile.out
 
-#
-#fi
-#done
+for ((a=1; a <= 180 ; a++))
+do
+echo Test $a
+echo $a " Test" >> TypeChecking/outfile.out
+cat TypeChecking/$a.in >> TypeChecking/outfile.out
+echo  "\n\n"out File>> TypeChecking/outfile.out
+#./compiller -pd TypeChecking/$a.in >> TypeChecking/outfile.out
+./compiller -pd TypeChecking/$a.in > TypeChecking/$a.out
+echo  "\n" >> TypeChecking/outfile.out
+if diff TypeChecking/$a.out TypeChecking/$a.exm
+echo "\n"
+then    echo OK
+cat TypeChecking/$a.out >> TypeChecking/outfile.out
+else    echo bad
+open TypeChecking/$a.exm
+open TypeChecking/$a.in
+
+
+fi
+done
+open TypeChecking/outfile.out
 
 
 
@@ -70,25 +72,28 @@
 #open TypeChecking/*.out
 
 
-
-echo  >Statements/outfile.out
-
-for ((a=1; a <= 26 ; a++))
-do
-echo Test $a
-echo $a " Test" >> Statements/outfile.out
-cat Statements/$a.in >> Statements/outfile.out
-echo  "\n\n"out File>> Statements/outfile.out
-#./compiller -pd TypeChecking/$a.in >> TypeChecking/outfile.out
-./compiller -pd Statements/$a.in > Statements/$a.out
-echo  "\n" >> Statements/outfile.out
-if diff Statements/$a.out Statements/$a.exm
-then    echo OK
-cat Statements/$a.out >> Statements/outfile.out
-else    echo bad
-open Statements/$a.out
-open Statements/$a.in
-
-
-fi
-done
+#
+#echo  >Statements/outfile.out
+#
+#for ((a=1; a <= 26 ; a++))
+#do
+#echo Test $a
+#echo $a " Test" >> Statements/outfile.out
+#cat Statements/$a.in >> Statements/outfile.out
+#echo  "\n\n"out File>> Statements/outfile.out
+##./compiller -pd TypeChecking/$a.in >> TypeChecking/outfile.out
+#./compiller -pd Statements/$a.in > Statements/$a.out
+#echo  "\n" >> Statements/outfile.out
+#if diff Statements/$a.out Statements/$a.exm
+#then    echo OK
+#cat Statements/$a.out >> Statements/outfile.out
+echo "\n"
+#else    echo bad
+#echo BAD TEST >> Statements/outfile.out
+#open Statements/$a.out
+#open Statements/$a.in
+#
+#
+#fi
+#done
+#open Statements/outfile.out

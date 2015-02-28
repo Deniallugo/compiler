@@ -1,0 +1,8 @@
+int main()
+{
+	int  b, *a;
+	a = &b;
+	b = 5;	
+	printf("%d", *a , b);
+	
+}

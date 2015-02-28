@@ -1,0 +1,9 @@
+
+
+int main()
+{	int a[100];
+	int i = 5;
+	a[i] = -15;
+	a[i] *= (i * i * i / 5 % 3) / 1 - 1;
+	printf("%d %d", a[i], a[99]);
+}

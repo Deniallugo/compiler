@@ -12,6 +12,7 @@
 #include "Token.h"
 #include "scanner.h"
 #include "Symbol.h"
+#include "AsmCode.h"
 #include <vector>
 using namespace std;
 
@@ -20,7 +21,7 @@ using namespace std;
 static bool isEq(Token* t, TYPES _type,  string _value){
     return (t->Type == _type && t->Value == _value);
 }
-//
+
 static bool isAssing(Token* op){
     return (isEq(op, _OPERATION, "=")||
             isEq(op, _OPERATION, "+=")||
@@ -33,6 +34,7 @@ static bool isAssing(Token* op){
             isEq(op, _OPERATION, "^=")
             );
 }
+
 static bool isEqual(Token* op){
     return (isEq(op, _OPERATION, "<=")||
             isEq(op, _OPERATION, ">=")||
@@ -58,12 +60,17 @@ class ExprNode {
 protected:
     Token *token;
 public:
+    int index;
     friend class Parser;
-    friend class BinaryOpNode;
+    friend class BinOpNode;
     friend class MyException;
+    void SetIndex( int i ){index = i;}
+	virtual void generate(AsmCode &code){}
+	virtual void generateLvalue(AsmCode& code){}
+    virtual bool isExpression() const { return true; }
     Token* getToken(){ return token;}
     ExprNode(){token = nullptr;}
-    ExprNode(Token* t):token(t){}
+    ExprNode(Token* t, int i = 0):token(t), index(i){}
     ExprNode* init_var(SymbolType *);
     virtual void print(int deep = 0) const {};
     virtual void print(ofstream *t, int deep = 0) const {}
@@ -72,6 +79,9 @@ public:
     virtual bool isModifiableLvalue() const { return false; }
     static ExprNode* makeTypeCoerce(ExprNode* expr, SymbolType *from, SymbolType *to,  Token* t = nullptr);
     friend class ArrNode;
+
+	friend class PoinerNode;
+	friend class FuncCallNode;
 };
 
 class OpNode : public ExprNode{
@@ -79,6 +89,8 @@ protected:
     string opName() const;
 public:
     OpNode(Token *op);
+    virtual void generate(AsmCode &code) {}
+    virtual void generateLValue(AsmCode &){}
     virtual void print(int deep) const {}
     virtual void print(int deep, ofstream* f) const {}
 };
@@ -91,9 +103,13 @@ protected:
 public:
     friend class Parser;
     friend class VarSymbol;
+	friend class PointerNode;
     BinOpNode(Token *op, ExprNode* l, ExprNode* r);
     virtual SymbolType *getType();
     bool isLvalue() const;
+    void SetIndex(int i);
+    virtual void generate(AsmCode &code);
+    virtual void generateLvalue(AsmCode &);
     bool isModifiableLvalue() const;
     void print(int deep) const;
     void print(ofstream *f, int deep);
@@ -108,6 +124,9 @@ public:
     bool isLvalue() const;
     bool isModifiableLvalue() const;
     virtual SymbolType *getType();
+    void SetIndex(int i);
+    virtual void generate(AsmCode &code);
+    virtual void generateLvalue(AsmCode &);
     void print(int deep) const;
     void print(ofstream *f, int deep) const;
 };
@@ -133,6 +152,8 @@ public:
         value = t.Value;
         type = t.Type;
     }
+    virtual void generate(AsmCode &code){}
+    virtual void generateLValue(AsmCode &){}
     ConstNode (string _value) {
         if (!_value.find('.'))
             type = _FLOAT;
@@ -148,6 +169,8 @@ class VarNode : public ExprNode{
 public:
     string name;
     void print(int deep) const;
+    virtual void generate(AsmCode &code);
+    virtual void generateLValue(AsmCode &);
     VarNode(string _name, SymbolType* _type = nullptr){
         name = _name;
         varSym = _type;
@@ -160,23 +183,6 @@ public:
     }
 };
 
-class CallNode : public ExprNode{
-public:
-    ExprNode* name;
-    vector<ExprNode*> args;
-    CallNode(ExprNode* _name, vector<ExprNode*> _args):ExprNode(*_name){
-        args = _args;
-    }
-
-};
-
-class ArgNode: public ExprNode{
-    ExprNode* left;
-    ExprNode* right;
-public:
-    ArgNode(ExprNode* _left , ExprNode* _right);
-    void print(int deep) const;
-};
 
 class StmtListNode : public ExprNode {
     ExprNode * m_left, * m_right;
@@ -195,6 +201,8 @@ class ExprStmtNode : public ExprNode {
 public:
     ExprStmtNode(ExprNode *_expr):m_expr(_expr){}
     void print(int deep) const;
+    virtual void generate(AsmCode &code);
+    virtual void generateLValue(AsmCode &);
     void print(ofstream *f, int deep) const;
     SymbolType* getType();
     bool isLvalue() const ;
@@ -209,6 +217,9 @@ private:
 public:
     CastNode(Token *op, ExprNode *oper, vector<SymbolType*> *ts);
     CastNode(Token* op, ExprNode* oper, SymbolType* ts);
+	virtual void generate(AsmCode &code){ operand->generate(code); }
+    virtual void generateLValue(AsmCode &){}
+	bool isModifiableLvalue() const{ return true; }
      SymbolType *getType();
     void print(int deep) const;
     void print(ofstream *f, int deep) const;
@@ -217,6 +228,8 @@ public:
 class RetNode : public UnOpNode{
 public:
     RetNode(Token *token, ExprNode *n) : UnOpNode(token, n) {}
+    virtual void generate(AsmCode &code);
+    virtual void generateLValue(AsmCode &);
     void print(int deep) const;
 };
 
@@ -229,6 +242,8 @@ public:
     void print(int deep) const;
     void print(ofstream *f, int deep) const;
     bool isLvalue() const {return false;}
+    virtual void generate(AsmCode &code);
+    virtual void generateLValue(AsmCode &);
     bool isModifiableLvalue() const { return false;}
 };
 
@@ -236,6 +251,8 @@ class TernaryOpNode : public BinOpNode{
 private:
     ExprNode* condition;
 public:
+    virtual void generate(AsmCode &code){}
+    virtual void generateLValue(AsmCode &){}
     TernaryOpNode(Token* op, ExprNode* c, ExprNode* l, ExprNode* r);
     void print(int deep) const;
     void print(ofstream *f, int deep) const;
@@ -254,7 +271,10 @@ public:
     void print(int deep) const;
     void print(ofstream* f, int deep) const;
     bool isLvalue() const;
-    bool isModifiableLvalue() const;
+    virtual void generate(AsmCode &code);
+	virtual void generateLvalue(AsmCode& code);
+	void generateLvaluePointer(AsmCode& code);
+	bool isModifiableLvalue() const;
 };
 
 
@@ -262,13 +282,16 @@ public:
 class FunctionalNode : public ExprNode{
 protected:
     FuncSymbol *symbol;
-    ExprNode *name;
     vector<ExprNode*> args;
     void printArgs(int deep) const;
+    void SetIndex(int i );
     void printArgs(ofstream *f, int deep) const;
     void print(int deep) const;
     void print(ofstream *f, int deep) const;
 public:
+
+	ExprNode *name;
+
     SymbolType *getType();
     FunctionalNode(ExprNode *n);
     FunctionalNode(Token *t,ExprNode *n, FuncSymbol *s = nullptr);
@@ -281,6 +304,22 @@ public:
     ArrNode(ExprNode* arr, ExprNode* arg = nullptr);
     void print(int deep) const;
     void print(ofstream *f, int deep) const;
+    virtual void generate(AsmCode &code);
+    virtual void generateLvalue(AsmCode &);
+    bool isLvalue() const;
+    bool isModifiableLvalue() const;
+    SymbolType *getType();
+};
+
+
+class PointerNode : public FunctionalNode{
+    ExprNode *arg;
+public:
+    PointerNode(ExprNode* arr, ExprNode* arg = nullptr);
+	void print(int deep) const;
+	void print(ofstream *f, int deep) const;
+	virtual void generate(AsmCode &code);
+	virtual void generateLvalue(AsmCode &);
     bool isLvalue() const;
     bool isModifiableLvalue() const;
     SymbolType *getType();
@@ -293,14 +332,23 @@ class Statement : public ExprNode{
 class Block : public Statement{
 private:
     vector<ExprNode*> body;
+    bool isExpression() const { return false; }
+    int size() const {
+        return body.size();
+    }
+
     SymTable *table;
+    AsmLabelArg *endLabel ;
+
 
     friend class Parser;
 
 public:
-    bool isCanUseBreak = false;
-    Block() : table(new SymTable()) {}
-    Block(SymTable *t) : table(t) {}
+    bool isCanUseBreak;
+    virtual void generate(AsmCode &code);
+
+    Block() : table(new SymTable()) { isCanUseBreak = false;}
+    Block(SymTable *t) : table(t) ,endLabel(0){ isCanUseBreak = false;}
     void AddStatement(ExprNode *st) { body.push_back(st); }
     void print(int deep = 0) const;
 };
@@ -309,20 +357,36 @@ class StringNode;
 class IONode : public FunctionalNode{
 private:
     Token *token;
+
     StringNode *format;
 
 public:
     friend class Parser;
     IONode(Token *t, StringNode *n) : token(t), format(n), FunctionalNode(0, 0) {};
     SymbolType *getType();
+    virtual void generate(AsmCode &code);
     void print(int deep) const;
 };
 
+
+class FuncCallNode : public FunctionalNode{
+private:
+    FuncSymbol *symbol;
+
+public:
+    FuncCallNode(Token* t, ExprNode* func, FuncSymbol* funcsym): FunctionalNode(t, func), symbol(funcsym) {}
+    void generate(AsmCode& code);
+    SymbolType* getType();
+    void print(int deep) const;
+    friend class FuncSymbol;
+};
 
 class IntNode : public ExprNode{
 public:
     IntNode(Token *t);
     void print(int deep) const;
+    virtual void generate(AsmCode &code);
+
     void print(ofstream *f, int deep) const;
     SymbolType* getType();
 };
@@ -331,8 +395,11 @@ public:
 class FloatNode : public ExprNode{
 public:
     FloatNode(Token *t);
+    string constName() const;
     void print(int deep) const;
     void print(ofstream* f, int deep) const;
+    virtual void generate(AsmCode &code);
+    virtual void generateLvalue(AsmCode &);
     SymbolType* getType();
 };
 
@@ -342,6 +409,7 @@ public:
     CharNode(Token *t);
     void print(int deep) const;
     SymbolType* getType();
+	virtual void generate(AsmCode& code);
     void print(ofstream* f, int deep) const;
 };
 
@@ -350,6 +418,8 @@ public:
     StringNode(Token *t);
     void print(int deep) const;
     SymbolType *getType();
+	virtual void generate(AsmCode &code);
+    virtual void generateData(AsmCode &code) ;
     void print(ofstream* f, int deep) const;
 };
 
@@ -360,6 +430,8 @@ private:
     ExprNode *third_cond;
     Block *body;
 public:
+    virtual void generate(AsmCode &code){}
+    virtual void generateLvalue(AsmCode &){}
     ForStatement(ExprNode *first, ExprNode *second, ExprNode *third, Block *block) : first_cond(first), second_cond(second), third_cond(third), body(block) {
     }
     void print(int deep = 0) const;
@@ -372,6 +444,8 @@ private:
     Block *if_branch;
     Block *else_branch;
 public:
+    virtual void generate(AsmCode &code){}
+    virtual void generateLvalue(AsmCode &){}
     IfStatement(ExprNode *cond, Block *$if, Block *$else = 0) : condition(cond), if_branch($if), else_branch($else) {
 
     }
@@ -383,6 +457,8 @@ private:
     ExprNode *condition;
     Block *body;
 public:
+    virtual void generate(AsmCode &code){}
+    virtual void generateLvalue(AsmCode &){}
     WhileStatement(ExprNode *c, Block *b) : condition(c), body(b) {
     }
     void print(int deep = 0) const;
@@ -394,6 +470,8 @@ private:
     ExprNode *condition;
     Block *body;
 public:
+    virtual void generate(AsmCode &code){}
+    virtual void generateLvalue(AsmCode &){}
     DoWhileStatement(ExprNode *c, Block *b) : condition(c), body(b) {
     }
     void print(int deep = 0) const;
@@ -401,10 +479,15 @@ public:
 
 class ContinueStatement : public Statement {
     void print(int deep = 0) const;
+    virtual void generate(AsmCode &code){}
+
 };
 
 class BreakStatement : public Statement {
     void print(int deep = 0) const;
+    virtual void generateLvalue(AsmCode &){}
+    virtual void generate(AsmCode &code){}
+
 };
 
 class ReturnStatement : public Statement {
@@ -414,6 +497,8 @@ private:
 public:
     ReturnStatement(ExprNode *v) : value(v) {}
     void print(int deep = 0) const;
+    virtual void generate(AsmCode &code){}
+    virtual void generateLvalue(AsmCode &){}
 };
 
 

@@ -10,7 +10,6 @@
 
 #include <stdio.h>
 #include "Parser.h"
-#warning const pointer
 
 bool Parser::isBaseType( Token* t){
     return (t->Type == _FLOAT || t->Type == _INTEGER || t->Type == _CHAR);
@@ -27,7 +26,7 @@ void Parser::errorIf(bool isTrue, string error, Token* tk){
 }
 
 
-Parser :: Parser(Scanner &l) : scan(l), parsingFunc(0), struct_counter(0){
+Parser :: Parser(Scanner &l , Generator& gen, bool t) :scan(l), generator(gen),parsingFunc(0), struct_counter(0){
 
     scan.Next();
     symStack = new SymTableStack();
@@ -70,11 +69,11 @@ Parser :: Parser(Scanner &l) : scan(l), parsingFunc(0), struct_counter(0){
     right["|="] = right["&="] = right["%="] = right["/="] =
     right["*="] = right["-="] = right["+="] = right["="] = true;
 
-    unary["!"] = unary["*"] = unary["--"] = unary["++"] =
+	unary["~"] = unary["!"] = unary["*"] = unary["**"] = unary["--"] = unary["++"] =
     unary["&"] = unary["+"] = unary["-"] = true;
 
-    typePriority[CharType] = 3;
-    typePriority[IntType] = 2;
+    typePriority[CharType] = 2;
+    typePriority[IntType] = 3;
     typePriority[FloatType] = 1;
     typePriority[VoidType] = 0;
 
@@ -109,20 +108,21 @@ Parser :: Parser(Scanner &l) : scan(l), parsingFunc(0), struct_counter(0){
     basic_def->add_symbol(FloatType);
     basic_def->add_symbol(CharType);
     basic_def->add_symbol(VoidType);
-
-    global_field.table = new SymTable(*basic_def);
+	index =0 ;
+    global_field.table = basic_def;
     Block* bl = new Block(new SymTable());
     symStack->push(basic_def);
     blocks.push(new Block(basic_def));
     blocks.push(bl);
-    symStack->push(bl->table);
+  //  symStack->push(bl->table);
 }
 
 
 
 void Parser :: ParseProgram(){
     while (!scan.isEnd()){
-        if (scan.Get()->Type == _CONST || scan.Get()->Type == _STRUCT || dynamic_cast<SymbolType*>(symStack->find_symbol(scan.Get()->Value)) ||scan.Get()->Value == "double" || scan.Get()->Type == _TYPEDEF )
+        if (scan.Get()->Type == _CONST || scan.Get()->Type == _STRUCT || 			dynamic_cast<SymbolType*>(symStack->find_symbol(scan.Get()->Value))
+ || scan.Get()->Type == _TYPEDEF )
             ParseDeclaration();
         else
             global_field.body.push_back(ParseExpr());
@@ -130,6 +130,10 @@ void Parser :: ParseProgram(){
     //    if (!main_func) {
     //        throw MyException("There аrе no entry point \n");
     //    }
+    VarSymbol *main = dynamic_cast<VarSymbol*>(global_field.table->sym_ptr[global_field.table->index["main"]]);
+    errorIf(!main || !main->type->isFunc(), "Can't find main function");
+    CreateTopTable();
+
 
 
 }
@@ -170,10 +174,9 @@ ExprNode* Parser  :: ParseDeclaration(SymbolType* sym_type){
         if(isEq(scan.Get(), _OPERATION, "=")){
             Token *asgn = scan.Get();
             scan.Next();
-            ExprNode* assign_operand = ParseExpr(priorityTable[","] + 1);
+            ExprNode* Assing_operand = ParseExpr(priorityTable[","] + 1);
 
-            //   parsingFunc->body->AddStatement(assign)
-            node = new BinOpNode(asgn, new IdentifierNode(token, var), assign_operand);
+            node = new BinOpNode(asgn, new IdentifierNode(token, var), Assing_operand);
             if(dynamic_cast<ConstSymbolType*> (var->getType()))
                 errorIf(!var->getType()->getType()->canConvertTo(node->right->getType()),"Cannot perform conversion",scan.Get() );
             else
@@ -188,11 +191,10 @@ ExprNode* Parser  :: ParseDeclaration(SymbolType* sym_type){
         scan.Next();
     }
     if(isEq (scan.Get(),_SEPARATION,"{")){
-        // symStack->push(new SymTable());
 
         FuncSymbol *func = dynamic_cast<FuncSymbol*>(var->type);
         errorIf(!func, "Unexpected brace", scan.Get());
-        errorIf((symStack->tables.size() != 2), "Can not define the function in the block", scan.Get());
+        errorIf((symStack->tables.size() != 1), "Can not define the function in the block", scan.Get());
         parsingFunc = func;
         func->body = ParseBlock();
         parsingFunc = 0;
@@ -282,56 +284,32 @@ StructSymbol* Parser :: ParseStruct(bool param){
         errorIf(param, "Using the definition type are not allowed", token);
         errorIf(struct_symbol->m_fields, "Struct redefinetion", token);
         struct_symbol->m_fields = ParseStructBlock();
-        //symStack->push(struct_symbol->m_fields);
-        //        token =scan.GetNext();
-        //        while(!isEq(token, _SEPARATION, "}")){
-        //            SymbolType *type = ParseType();
-        //            token = scan.GetNext();
-        //            while(!isEq(token, _SEPARATION, ";")){
-        //                VarSymbol * var = ParseIdentifier(type);
-        //                errorIf(dynamic_cast<FuncSymbol *>(var), "No statements and function in struct", token);
-        //                struct_symbol->m_fields->add_symbol(var);
-        //                token = scan.Get();
-        //                if(isEq(token, _SEPARATION, ","))
-        //                    token =scan.GetNext();
-        //            }
-        //            token =scan.GetNext();
-        //        }
-        // symStack->pop();
+   
     }
     return struct_symbol;
 }
 
+//
 
-FunctionalNode* Parser :: ParseFuncCall(ExprNode *r){
-    FunctionalNode* f = new FunctionalNode(r->token, r, dynamic_cast<FuncSymbol*>(r->getType()));
-    VarSymbol* s = dynamic_cast<VarSymbol*>(symStack->find_symbol(r->token->Value));
-    FuncSymbol* f1 = dynamic_cast<FuncSymbol* >(s->type);
-    errorIf(!f1, "not define function",scan.Get());
+
+
+FunctionalNode* Parser::ParseFuncCall(ExprNode *r){
+    FuncCallNode* f = new FuncCallNode(r->token, r, dynamic_cast<FuncSymbol*>(r->getType()));
     scan.Next();
     Token* t = scan.Get();
-    int i = 0;
-    errorIf ((t->Value == ")" && f1->params->size() != 0)
-             ,"No define function with this Args",t);
-    while(!isEq(t, _SEPARATION, ")")){
-
+    while(*t != ")"){
         ExprNode* s = ParseExpr(priorityTable[","] + 1);
-        errorIf ((s != nullptr && f1->params->size() == 0), "No define function with this Args",t);
-
-        errorIf(i > f1->params->size() ||!( s->getType()->canConvertTo(f1->params->sym_ptr[i]->getType())), "No define function with this Args",t);
         f->addArg(s);
-        t = scan.Get();
-        errorIf(scan.isEnd(), "Expected closing bracket after function argument list",scan.Get());
-        if(isEq(t,  _OPERATION, ",")){
+        t =scan.Get();
+        errorIf(scan.isEnd(), "Expected closing bracket after function argument list", scan.Get());
+        if(*t == ","){
             scan.Next();
             t = scan.Get();
         }
-        i++;
     }
     scan.Next();
     return f;
 }
-
 
 
 ExprNode* Parser :: ParseExpr(int priority){
@@ -427,13 +405,18 @@ ExprNode* Parser :: ParseFactor(){
             if(!sym && parsingFunc)
                 sym = parsingFunc->params->find_symbol(token->Value);
             string exc = "Identifier \"" + token->Value + "\" not defined";
-            //errorIf(!sym, exc.c_str(), token);
-            //errorIf(!dynamic_cast<VarSymbol*>(sym) && !dynamic_cast<FuncSymbol*>(sym), "Unknown symbol", token);
-            //errorIf(!sym, "Identifier is undefined", token);
+            errorIf(!sym, exc.c_str(), token);
+            errorIf(!dynamic_cast<VarSymbol*>(sym) && !dynamic_cast<FuncSymbol*>(sym), "Unknown symbol", token);
+            errorIf(!sym, "Identifier is undefined", token);
+		
+             root = new IdentifierNode(token, dynamic_cast<VarSymbol*>(sym));
+			if (dynamic_cast<PointerSymbol*>(sym->getType()))
+				root = new PointerNode(root);
+			
 
-            root = new IdentifierNode(token, dynamic_cast<VarSymbol*>(sym));
             if(isEq(scan.GetNext() ,_SEPARATION ,"("))
                 root = ParseFuncCall(root);
+            
             //scan.Next();
             return root;
         }
@@ -443,7 +426,10 @@ ExprNode* Parser :: ParseFactor(){
             break;
 
         case _STRING:
+
             root = new StringNode(token);
+			root->SetIndex(++index);
+            stringConsts.push_back(dynamic_cast<StringNode*>(root));
             break;
 
         case _KEYWORD:
@@ -488,6 +474,17 @@ ExprNode* Parser :: ParseFactor(){
 
 
         case _OPERATION:
+			if (token->Value == "*"){
+				scan.Next();
+				auto temp = ParseExpr(priorityTable["--"]);
+			//	if (dynamic_cast<PointerNode*>(temp))
+//				root = dynamic_cast<PointerNode*>(temp)->name;
+	//				root = temp;
+		//		else
+					root = new PointerNode(temp);
+				
+			}else
+				
             if(unary[token->Value]){
                 scan.Next();
                 root = new UnOpNode(token, ParseExpr(priorityTable["--"]));
@@ -513,6 +510,15 @@ ExprNode* Parser :: ParseFactor(){
         scan.Next();
     root->getType();
     return root;
+}
+
+void ArrNode::generate(AsmCode &code){
+	generateLvalue(code);
+	code.add(_PUSH, new AsmIndirectArg(_EAX))
+		.add(_POP, _EAX)
+		.add(_POP, _ECX)
+		.add(_PUSH, new AsmRegArg(_EAX));
+
 }
 
 
@@ -707,7 +713,7 @@ VarSymbol * Parser :: ParseIdentifier(SymbolType *type, bool param){
     if(isEq(token, _SEPARATION, "("))
         return ParseComplexDeclaration(type);
 
-    while(isEq(token, _OPERATION, "*")|| token->Type == _CONST){
+	while (isEq(token, _OPERATION, "*") || isEq(token, _OPERATION, "**") || token->Type == _CONST){
         if(token->Type == _CONST)
             Const = true;
         else
@@ -988,6 +994,9 @@ ExprNode* Parser :: ParseStatement(){
         return ParseJumpStatement();
     else
         return ParseExpr();
+    int *a  ;
+     int s = a - a;
+    s++;
 
 
 }
@@ -1009,10 +1018,26 @@ Statement* Parser :: ParseJumpStatement(){
         errorIf(!isCanUseBreak, "You can't use continue",scan.Get());
         jump = new ContinueStatement();
     }
-    
+
     
     
     errorIf(!isEq(scan.GetNext() ,_SEPARATION,";"), "Semicolon expected", scan.Get());
     scan.Next();
     return jump;
+}
+
+void Parser::CreateTopTable(){
+    for(int i = 4; i < global_field.table->size(); i++)
+        top.add_symbol(global_field.table->sym_ptr[i]);
+}
+
+
+void Parser::GenerateCode(){
+ 
+    for(int i = 0; i < stringConsts.size(); i++)
+        stringConsts[i]->generateData(generator.data);
+    top.generateGlobals(generator.data);
+	generator.code.add(new AsmLabelArg("_start"));
+	main_func->body->generate(generator.code);	
+	generator.code.add(_RET);
 }

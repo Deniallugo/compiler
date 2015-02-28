@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8341741C1A42D5AA000AF836 /* node_generation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8341741B1A42D5AA000AF836 /* node_generation.cpp */; };
 		837E16011A1187F30037FADF /* Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 837E16001A1187F30037FADF /* Parser.cpp */; };
 		83842D8F19FD068B0074C105 /* Symbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83842D8E19FD068B0074C105 /* Symbol.cpp */; };
 		838BEE891A22EEF400D5DE88 /* Parser_for_expression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 838BEE871A22EEF400D5DE88 /* Parser_for_expression.cpp */; };
 		838CA0CB19C9B7D2007A9FAE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 838CA0CA19C9B7D2007A9FAE /* main.cpp */; };
 		838CA0D319C9B7F1007A9FAE /* scanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 838CA0D119C9B7F1007A9FAE /* scanner.cpp */; };
+		83BC76F61A32BC7E0049B7EB /* AsmCode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83BC76F41A32BC7E0049B7EB /* AsmCode.cpp */; };
 		83E9BBFF19E6A2E6004E9FD4 /* Token.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83E9BBFD19E6A2E6004E9FD4 /* Token.cpp */; };
 		83E9BC0219E6A372004E9FD4 /* MyException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83E9BC0019E6A372004E9FD4 /* MyException.cpp */; };
 		83E9BC0519E7554A004E9FD4 /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83E9BC0319E7554A004E9FD4 /* Node.cpp */; };
@@ -30,6 +32,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8341741B1A42D5AA000AF836 /* node_generation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = node_generation.cpp; sourceTree = "<group>"; };
 		837C8CE219DEC746003281CC /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = "<group>"; };
 		837E16001A1187F30037FADF /* Parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parser.cpp; sourceTree = "<group>"; };
 		8380BEFF19DE76930057B520 /* compiller.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = compiller.profdata; sourceTree = "<group>"; };
@@ -40,6 +43,8 @@
 		838CA0CA19C9B7D2007A9FAE /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		838CA0D119C9B7F1007A9FAE /* scanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = scanner.cpp; sourceTree = "<group>"; usesTabs = 0; };
 		838CA0D219C9B7F1007A9FAE /* scanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scanner.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		83BC76F41A32BC7E0049B7EB /* AsmCode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AsmCode.cpp; sourceTree = "<group>"; };
+		83BC76F51A32BC7E0049B7EB /* AsmCode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsmCode.h; sourceTree = "<group>"; };
 		83D8AD5019DA297200A69BFB /* Script.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = Script.sh; sourceTree = "<group>"; };
 		83E9BBFD19E6A2E6004E9FD4 /* Token.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Token.cpp; sourceTree = "<group>"; };
 		83E9BBFE19E6A2E6004E9FD4 /* Token.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Token.h; sourceTree = "<group>"; };
@@ -96,6 +101,7 @@
 				837E16001A1187F30037FADF /* Parser.cpp */,
 				838BEE871A22EEF400D5DE88 /* Parser_for_expression.cpp */,
 				83E9BC0319E7554A004E9FD4 /* Node.cpp */,
+				8341741B1A42D5AA000AF836 /* node_generation.cpp */,
 				83E9BC0419E7554A004E9FD4 /* Node.h */,
 				83842D8D19FD053C0074C105 /* Symbol.h */,
 				83842D8E19FD068B0074C105 /* Symbol.cpp */,
@@ -103,6 +109,8 @@
 				83E9BBFE19E6A2E6004E9FD4 /* Token.h */,
 				83E9BC0019E6A372004E9FD4 /* MyException.cpp */,
 				83E9BC0119E6A372004E9FD4 /* MyException.h */,
+				83BC76F41A32BC7E0049B7EB /* AsmCode.cpp */,
+				83BC76F51A32BC7E0049B7EB /* AsmCode.h */,
 			);
 			path = compiller;
 			sourceTree = "<group>";
@@ -163,6 +171,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				83BC76F61A32BC7E0049B7EB /* AsmCode.cpp in Sources */,
+				8341741C1A42D5AA000AF836 /* node_generation.cpp in Sources */,
 				838CA0D319C9B7F1007A9FAE /* scanner.cpp in Sources */,
 				83E9BC0219E6A372004E9FD4 /* MyException.cpp in Sources */,
 				837E16011A1187F30037FADF /* Parser.cpp in Sources */,

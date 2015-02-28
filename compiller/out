@@ -1,0 +1,6 @@
+keyword      int	 line:1	 col:5	kwInteger number                  
+identifer    main	 line:1	 col:10	identifier :main                
+separation   (	 line:1	 col:11	
+separation   )	 line:1	 col:12	
+separation   {	 line:1	 col:13	
+separation   }	 line:1	 col:14	

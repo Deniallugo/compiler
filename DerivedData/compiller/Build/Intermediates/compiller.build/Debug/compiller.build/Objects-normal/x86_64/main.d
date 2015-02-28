@@ -5,4 +5,5 @@ dependencies: \
   /Users/danil/Documents/Programming\ &\ HardCoding/cmp/compiller/compiller/MyException.h \
   /Users/danil/Documents/Programming\ &\ HardCoding/cmp/compiller/compiller/Parser.h \
   /Users/danil/Documents/Programming\ &\ HardCoding/cmp/compiller/compiller/Node.h \
-  /Users/danil/Documents/Programming\ &\ HardCoding/cmp/compiller/compiller/Symbol.h
+  /Users/danil/Documents/Programming\ &\ HardCoding/cmp/compiller/compiller/Symbol.h \
+  /Users/danil/Documents/Programming\ &\ HardCoding/cmp/compiller/compiller/AsmCode.h

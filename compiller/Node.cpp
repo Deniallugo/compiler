@@ -16,7 +16,9 @@ map<string, SymbolType*> operationReturningType;
 
 
 
-
+int max(int a, int b){
+	return a > b ? a : b;
+}
 
 OpNode :: OpNode(Token *op) : ExprNode(op) {}
 
@@ -45,7 +47,7 @@ ExprNode *ExprNode :: makeTypeCoerce(ExprNode* expr, SymbolType *from, SymbolTyp
         if(typePriority[to] - typePriority[from] == 1){
 
             s.push_back(to);
-            return new CastNode(NULL, expr, &s);
+            return new CastNode(t, expr, &s);
         }
         s.push_back(FloatType);
         return new CastNode(NULL, makeTypeCoerce(expr, from, IntType), &s);
@@ -159,9 +161,13 @@ SymbolType *BinOpNode :: getType(){
         }
         if((l_pointer && rightType->canConvertTo(IntType)) &&!isEq(token, _OPERATION, "="))
             return l_pointer == 0 ? r_pointer : l_pointer;
-
+		if (leftType == IntType && (r_array || r_pointer)){
+			return new PointerSymbol(leftType->getType());
+		}
         if(l_array  && rightType->canConvertTo(IntType) &&!isEq(token, _OPERATION, "=") )
             return new PointerSymbol(l_array == 0 ? r_array : l_array);
+		if (l_pointer && rightType->canConvertTo(IntType) && isEq(token, _OPERATION, "="))
+			return new PointerSymbol(l_array == 0 ? r_array : l_array);
 
 
     }
@@ -178,9 +184,10 @@ SymbolType *BinOpNode :: getType(){
     }
     if (isEq(token, _OPERATION, "-")) {
         if((l_pointer && r_pointer) || (l_array && r_array)){
-            if( (l_pointer && r_pointer && (*l_pointer->pointer != r_pointer->pointer))
-               || (l_array && r_array && (*l_array->type != r_array->type)))
-                throw MyException("Operand types are incompatible", token);
+            if( 
+				//(l_pointer && r_pointer && (l_pointer->pointer != r_pointer->pointer))|| 
+			   (l_array && r_array && (l_array->type != r_array->type)))
+                throw MyException("Operand  are incompatible", token);
             return IntType;
         }
         if((l_pointer && rightType->canConvertTo(IntType)))
@@ -205,7 +212,7 @@ SymbolType *BinOpNode :: getType(){
 
     }
 
-
+	
     if ( r_pointer|| l_pointer || l_array || r_array)
         throw MyException(" Operation not for pointer",token);
 
@@ -214,8 +221,8 @@ SymbolType *BinOpNode :: getType(){
         throw MyException("Can't perform operation with  structures", token);
     if(typePriority[maxType] > max(typePriority[leftType], typePriority[rightType]))
         throw MyException("Invalid type of operands", token);
-    left = makeTypeCoerce(left, leftType, maxType);
-    right = makeTypeCoerce(right, rightType, maxType);
+    left = makeTypeCoerce(left, leftType, maxType,token);
+    right = makeTypeCoerce(right, rightType, maxType,token);
     if (operationReturningType.count(operation))
         return operationReturningType[operation];
     else
@@ -230,7 +237,7 @@ void UnOpNode :: print(int deep) const{
     cout << string(deep * 2, ' ') << opName() << endl;
     operand->print(deep + 1);
 }
-
+ 
 void UnOpNode :: print(ofstream *f, int deep) const{
     *f << string(deep * 2, ' ') << opName() << endl;
     operand->print(f, deep + 1);
@@ -268,9 +275,9 @@ SymbolType *UnOpNode::getType(){
         return new PointerSymbol(type);
     }
     if(isEq(token, _OPERATION, "*" )){
-       if( dynamic_cast<ArraySymbol*>(operand->getType()))
-        return new PointerSymbol(type->getType());
-        else
+		if (dynamic_cast<ArraySymbol*>(operand->getType()) || dynamic_cast<PointerSymbol*>(operand->getType()) || operand->getType() == IntType)
+			return new PointerSymbol(type->getType());
+	    else
             throw MyException("Operand is not a pointer", token);
 
     }
@@ -289,7 +296,7 @@ SymbolType *UnOpNode::getType(){
             throw MyException("Expression must be a modifiable lvalue", token);
     }
     if (isEq(token, _OPERATION,"-")){
-        if(!type->canConvertTo(FloatType))
+        if(!type->canConvertTo(IntType))
             throw MyException("Expression must have arithmetical type", token);
     }
 
@@ -329,6 +336,36 @@ SymbolType* IdentifierNode :: getType(){
 bool IdentifierNode :: isLvalue() const{
     return true;
 }
+
+void FuncCallNode::print(int deep) const {
+    name->print(deep);
+    cout << string(deep * 2, ' ') << "(" << endl;
+    printArgs(deep);
+    cout << string(deep * 2, ' ') << ")" << endl;
+}
+
+
+
+
+SymbolType* FuncCallNode::getType(){
+
+    FuncSymbol* sym = dynamic_cast<FuncSymbol*>(symbol);
+    int formalParametersCount = sym->params->size();
+    int realParametersCount = args.size();
+    if (formalParametersCount != realParametersCount)
+        throw MyException("Incorrect parameters count", token);
+    for (int i = 0; i < formalParametersCount; i++)
+    {
+        SymbolType* realParamType = args[i]->getType();
+        SymbolType* formalParamType = sym->params->sym_ptr[i]->getType();
+        if (!realParamType->canConvertTo(formalParamType))
+            throw MyException("Invalid type of parameter", args[i]->token);
+        args[i] = makeTypeCoerce(args[i], realParamType, formalParamType);
+    }
+    return symbol->getType();
+}
+
+
 
 bool IdentifierNode :: isModifiableLvalue() const{
     SymbolType *type = dynamic_cast<VarSymbol*>(var)->type;
@@ -372,6 +409,36 @@ SymbolType *ArrNode :: getType(){
     return type;
 }
 
+
+PointerNode::PointerNode(ExprNode* arr, ExprNode* _arg) : FunctionalNode(arr), arg(_arg) {}
+
+bool PointerNode::isLvalue() const{
+	return true;
+}
+bool PointerNode::isModifiableLvalue() const{
+	SymbolType *type = name->getType();
+	for (int i = 0; i < args.size(); i++)
+		type = type->upType();
+	return type->isModifiableLvalue();
+}
+
+SymbolType *PointerNode::getType(){
+	ArraySymbol *sym = dynamic_cast<ArraySymbol*>(name->getType());
+	PointerSymbol* sym1 = dynamic_cast<PointerSymbol*>(name->getType());
+	if (!sym && !sym1)
+		throw MyException("Expression must be a pointer type");
+	SymbolType *type = sym ? (SymbolType*)sym : (SymbolType*)sym1;
+	for (int i = 0; i < args.size(); i++){
+		type = type->upType();
+		if (type == 0)
+			throw MyException("Expression must be a pointer type");
+		if (!args[i]->getType()->canConvertTo(IntType))
+			throw MyException("Expression must have integral type");
+		args[i] = makeTypeCoerce(args[i], args[i]->getType(), IntType);
+	}
+	return type;
+}
+
 void ArrNode :: print(int deep) const{
     name->print(deep);
     cout << string(deep * 2, ' ') << "[" << endl;
@@ -384,6 +451,18 @@ void ArrNode :: print(ofstream *f, int deep) const{
     *f << string(deep * 2, ' ') << "[" << endl;
     printArgs(f, deep);
     *f<< string(deep * 2, ' ') << "]" << endl;
+}
+
+void PointerNode::print(int deep) const{
+	cout << string(deep * 2, ' ') << "*";
+	name->print(deep);
+}
+
+void PointerNode::print(ofstream *f, int deep) const{
+	name->print(f, deep);
+	*f << string(deep * 2, ' ') << "(" << endl;
+	printArgs(f, deep);
+	*f << string(deep * 2, ' ') << ")" << endl;
 }
 
 TernaryOpNode :: TernaryOpNode(Token* op, ExprNode* c, ExprNode* l, ExprNode* r): BinOpNode(op, l, r), condition(c) {}
@@ -494,6 +573,21 @@ void CastNode :: print(ofstream *f, int deep) const{
     *f << string(deep * 2, ' ') << ")" << endl;
 }
 
+void BinOpNode::SetIndex(int i){
+    index = i;
+    left->SetIndex(i);
+    right->SetIndex(i);
+}
+void UnOpNode::SetIndex(int i){
+    index = i;
+    operand->SetIndex(i);
+}
+
+void FunctionalNode::SetIndex(int i){
+    index = i;
+    for(ExprNode *arg : args)
+        arg->SetIndex(i);
+}
 
 void Block :: print(int deep) const{
     string tab(deep * 2, ' ');

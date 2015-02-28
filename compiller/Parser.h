@@ -20,24 +20,27 @@ class Parser{
     map <string, bool> right;
     map <string, bool> unary;
     stack<Block*> blocks;
-
+	int index;
     Symbol * symbolBuffer;
     FuncSymbol *parsingFunc;
     bool isCanUseBreak;
     FuncSymbol* main_func;
     Block global_field;
-    std::map<string, bool> assignmentOper, unaryOper;
+    std::map<string, bool> AssingmentOper, unaryOper;
     SymTableStack *symStack;
-
     void errorIf(bool, string, Token * = NULL);
     void errorIf_sem(bool, string, Token * = NULL);
     bool isBaseType(Token *);
+    SymTable top;
 
 public:
-    Parser(Scanner *, bool = false);
-    
+    Generator &generator;
+    Parser (Scanner &_scan, Generator &gen, bool t = false);
+    vector<StringNode*> stringConsts;
     void parse();
     void ParseProgram();
+    void GenerateCode();
+    void CreateTopTable();
     ExprNode* ParseDeclaration(SymbolType* sym_type = nullptr);
     SymTable* ParseStructBlock();
     bool CheckArgs(FuncSymbol* func1);
@@ -75,7 +78,6 @@ public:
     Statement* ParseJumpStatement();
     void CheckReturn(FuncSymbol* func);
     ExprNode* ParseExpr(int priority = 0 );
-    Parser ( Scanner &_scan);
     Statement* CycleStatement;
     friend class MyException;
 };
